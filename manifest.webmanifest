@@ -1,0 +1,13 @@
+{
+  "name": "三茶大道芸2026ナビ",
+  "short_name": "三茶ナビ",
+  "description": "三茶大道芸2026 会場ナビゲーションアプリ",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef1ec",
+  "theme_color": "#106b64",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

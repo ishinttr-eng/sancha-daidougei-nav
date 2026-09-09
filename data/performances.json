@@ -1,0 +1,18 @@
+{
+  "updatedAt": "2026-09-09T00:00:00+09:00",
+  "note": "サンプルデータです。実際の出演者情報が提供され次第、build_data.pyで置き換えてください。",
+  "performances": [
+    { "id": "P-001", "name": "サンプル大道芸人A", "kana": "さんぷるだいどうげいにんA", "venueId": "S-01", "date": "2026-10-03", "start": "11:00", "end": "11:30", "genre": "ジャグリング", "region": "東京都", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": false, "order": 1 },
+    { "id": "P-002", "name": "サンプルマジックB", "kana": "さんぷるまじっくB", "venueId": "S-02", "date": "2026-10-03", "start": "11:15", "end": "11:45", "genre": "マジック", "region": "神奈川県", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": true, "order": 1 },
+    { "id": "P-003", "name": "サンプルパントマイムC", "kana": "さんぷるぱんとまいむC", "venueId": "S-03", "date": "2026-10-03", "start": "12:00", "end": "12:30", "genre": "パントマイム", "region": "東京都", "intro": "サンプルの紹介文です。", "awardEntry": "新人賞エントリー", "isU25": false, "order": 1 },
+    { "id": "P-004", "name": "サンプル大道芸人A", "kana": "さんぷるだいどうげいにんA", "venueId": "S-04", "date": "2026-10-03", "start": "13:00", "end": "13:30", "genre": "ジャグリング", "region": "東京都", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": false, "order": 2 },
+    { "id": "P-005", "name": "サンプル音楽ユニットD", "kana": "さんぷるおんがくゆにっとD", "venueId": "S-01", "date": "2026-10-03", "start": "13:15", "end": "13:50", "genre": "音楽", "region": "千葉県", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": false, "order": 1 },
+    { "id": "P-006", "name": "サンプルバルーンE", "kana": "さんぷるばるーんE", "venueId": "S-02", "date": "2026-10-03", "start": "14:00", "end": "14:30", "genre": "バルーンアート", "region": "埼玉県", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": true, "order": 1 },
+    { "id": "P-007", "name": "サンプルマジックB", "kana": "さんぷるまじっくB", "venueId": "S-03", "date": "2026-10-04", "start": "11:00", "end": "11:30", "genre": "マジック", "region": "神奈川県", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": true, "order": 2 },
+    { "id": "P-008", "name": "サンプルアクロバットF", "kana": "さんぷるあくろばっとF", "venueId": "S-05", "date": "2026-10-04", "start": "11:30", "end": "12:00", "genre": "アクロバット", "region": "東京都", "intro": "サンプルの紹介文です。", "awardEntry": "グランプリエントリー", "isU25": false, "order": 1 },
+    { "id": "P-009", "name": "サンプル大道芸人A", "kana": "さんぷるだいどうげいにんA", "venueId": "S-01", "date": "2026-10-04", "start": "12:00", "end": "12:30", "genre": "ジャグリング", "region": "東京都", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": false, "order": 3 },
+    { "id": "P-010", "name": "サンプルパントマイムC", "kana": "さんぷるぱんとまいむC", "venueId": "S-04", "date": "2026-10-04", "start": "12:15", "end": "12:45", "genre": "パントマイム", "region": "東京都", "intro": "サンプルの紹介文です。", "awardEntry": "新人賞エントリー", "isU25": false, "order": 2 },
+    { "id": "P-011", "name": "サンプル音楽ユニットD", "kana": "さんぷるおんがくゆにっとD", "venueId": "S-02", "date": "2026-10-04", "start": "13:00", "end": "13:40", "genre": "音楽", "region": "千葉県", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": false, "order": 2 },
+    { "id": "P-012", "name": "サンプルバルーンE", "kana": "さんぷるばるーんE", "venueId": "S-05", "date": "2026-10-04", "start": "13:30", "end": "14:00", "genre": "バルーンアート", "region": "埼玉県", "intro": "サンプルの紹介文です。", "awardEntry": null, "isU25": true, "order": 2 }
+  ]
+}
