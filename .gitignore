@@ -19,3 +19,7 @@ dist-ssr/
 # claude local settings
 .claude/settings.local.json
 my-preferences.md
+
+# 公式データの生取得物
+tools/raw/
+CLAUDE.local.md

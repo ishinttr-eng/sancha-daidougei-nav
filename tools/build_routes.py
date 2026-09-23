@@ -1,34 +1,46 @@
 #!/usr/bin/env python3
 """
-全会場ペアの徒歩ルートをFOSSGIS OSRMから一括取得し、data/routes.json / data/walktimes.json を更新する。
+全会場ペアの徒歩ルートを FOSSGIS OSRM から一括取得し、
+data/routes.json（ポリライン・距離・所要時間）と data/walktimes.json（分数マトリクス）を更新する。
+
 一度きりのセットアップ用。中断しても再実行時は取得済みペアをスキップして再開できる。
-サーバー負荷対策で1リクエストごとに0.3秒のインターバルを挟む。
+
+実行:
+    python3 tools/build_routes.py
 """
 import json
 import time
 import urllib.request
-import itertools
+import urllib.parse
+from pathlib import Path
+from itertools import combinations
 
+ROOT = Path(__file__).resolve().parent.parent
+DATA = ROOT / "data"
 OSRM_BASE = "https://routing.openstreetmap.de/routed-foot/route/v1/foot"
-DATA_DIR = "data"
-REQUEST_INTERVAL_SEC = 0.3
+SLEEP_SEC = 0.3
 
 
-def load_json(path):
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+def load_venues():
+    venues = json.loads((DATA / "venues.json").read_text(encoding="utf-8"))["venues"]
+    return venues
 
 
-def save_json(path, data):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+def load_routes():
+    path = DATA / "routes.json"
+    if path.exists():
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {"routes": {}}
 
 
-def fetch_route(lng1, lat1, lng2, lat2):
-    url = f"{OSRM_BASE}/{lng1},{lat1};{lng2},{lat2}?overview=full&geometries=polyline"
-    with urllib.request.urlopen(url, timeout=10) as res:
-        data = json.loads(res.read())
+def fetch_route(a, b):
+    url = f"{OSRM_BASE}/{a['lng']},{a['lat']};{b['lng']},{b['lat']}?overview=full&geometries=polyline"
+    req = urllib.request.Request(url, headers={"User-Agent": "sancha-daidougei-navi/1.0"})
+    with urllib.request.urlopen(req, timeout=15) as res:
+        data = json.loads(res.read().decode("utf-8"))
     route = data["routes"][0]
     return {
         "distM": round(route["distance"]),
@@ -38,41 +50,49 @@ def fetch_route(lng1, lat1, lng2, lat2):
 
 
 def main():
-    venues = load_json(f"{DATA_DIR}/venues.json")["venues"]
-    try:
-        routes_data = load_json(f"{DATA_DIR}/routes.json")
-    except FileNotFoundError:
-        routes_data = {"routes": {}}
+    venues = load_venues()
+    routes_doc = load_routes()
+    routes = routes_doc.setdefault("routes", {})
 
-    pairs = list(itertools.combinations(sorted(v["id"] for v in venues), 2))
-    by_id = {v["id"]: v for v in venues}
-
+    pairs = list(combinations(sorted(venues, key=lambda v: v["id"]), 2))
+    total = len(pairs)
+    done = 0
     for a, b in pairs:
-        key = f"{a}|{b}"
-        if key in routes_data["routes"]:
+        key = "|".join(sorted([a["id"], b["id"]]))
+        if key in routes:
+            done += 1
             continue
-        va, vb = by_id[a], by_id[b]
         try:
-            routes_data["routes"][key] = fetch_route(va["lng"], va["lat"], vb["lng"], vb["lat"])
-            print(f"取得完了: {key}")
+            routes[key] = fetch_route(a, b)
+            print(f"[build_routes] {key} OK ({done+1}/{total})")
         except Exception as e:
-            print(f"取得失敗: {key} ({e})")
-        time.sleep(REQUEST_INTERVAL_SEC)
-        save_json(f"{DATA_DIR}/routes.json", routes_data)
+            print(f"[build_routes] {key} FAILED: {e}")
+        done += 1
+        time.sleep(SLEEP_SEC)
+        if done % 20 == 0:
+            (DATA / "routes.json").write_text(json.dumps(routes_doc, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    # walktimes.json も実測値で上書き
-    ids = sorted(by_id.keys())
-    minutes = [[0] * len(ids) for _ in ids]
-    for i, a in enumerate(ids):
-        for j, b in enumerate(ids):
-            if i == j:
-                continue
-            key = "|".join(sorted([a, b]))
-            r = routes_data["routes"].get(key)
-            if r:
-                minutes[i][j] = r["durMin"]
-    save_json(f"{DATA_DIR}/walktimes.json", {"ids": ids, "minutes": minutes, "source": "OSRM"})
-    print("walktimes.json を実測値で更新しました。")
+    (DATA / "routes.json").write_text(json.dumps(routes_doc, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # walktimes.json を実測値で更新（無いペアは概算のままにする＝build_data.py側の役割）
+    ids = [v["id"] for v in sorted(venues, key=lambda v: v["id"])]
+    wt_path = DATA / "walktimes.json"
+    if wt_path.exists():
+        wt = json.loads(wt_path.read_text(encoding="utf-8"))
+    else:
+        wt = {"ids": ids, "minutes": [[0] * len(ids) for _ in ids]}
+    id_index = {vid: i for i, vid in enumerate(wt["ids"])}
+    for key, r in routes.items():
+        a_id, b_id = key.split("|")
+        if a_id in id_index and b_id in id_index:
+            i, j = id_index[a_id], id_index[b_id]
+            wt["minutes"][i][j] = r["durMin"]
+            wt["minutes"][j][i] = r["durMin"]
+    # 1ペアも実測できなかった場合は概算のまま（source を付けると build_data.py 側が概算に戻さなくなる）
+    if routes:
+        wt["source"] = "OSRM"
+    wt_path.write_text(json.dumps(wt, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"[build_routes] 完了: {len(routes)}/{total} ペア")
 
 
 if __name__ == "__main__":

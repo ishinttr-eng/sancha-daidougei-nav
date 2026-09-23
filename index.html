@@ -2,39 +2,68 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>三茶大道芸2026ナビ</title>
-<meta name="description" content="三茶大道芸2026 会場ナビゲーションアプリ">
-<meta name="theme-color" content="#106b64">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>三茶大道芸ナビ 2026</title>
+<meta name="description" content="第30回 三茶de大道芸2026 非公式ナビゲーター">
+<meta name="theme-color" content="#1f1530">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <link rel="stylesheet" href="css/style.css">
 <script>
-// フォントサイズ設定の即時反映（FOUC対策）
-try {
-  var s = JSON.parse(localStorage.getItem("sancha-daidougei-settings") || "{}");
-  if (s.fontSize) document.documentElement.dataset.fontsize = s.fontSize;
-} catch (e) {}
+  try {
+    var s = JSON.parse(localStorage.getItem("scd.settings.v1") || "{}");
+    if (s.fontSize === "large") document.documentElement.classList.add("font-large");
+    if (s.theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
+    if (s.theme === "light") document.documentElement.setAttribute("data-theme", "light");
+  } catch (e) {}
 </script>
 </head>
 <body>
-<header id="header">
-  <h1>三茶大道芸<span class="year">2026</span>ナビ</h1>
-  <div class="header-actions">
-    <button id="change-badge" class="badge-btn" style="display:none">📢 変更あり</button>
-    <button id="settings-btn" class="icon-btn" aria-label="設定">⚙️</button>
-  </div>
-</header>
+<div id="app">
+  <header id="app-header">
+    <div class="brand">
+      <span class="brand-mark">&#129337;</span>
+      <div class="brand-text">
+        <span class="brand-name">三茶大道芸ナビ</span>
+        <span class="brand-sub" id="header-updated"></span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="btn-changelog" class="icon-btn" aria-label="更新履歴" title="更新履歴">&#128226;</button>
+      <button id="btn-settings" class="icon-btn" aria-label="設定" title="設定">&#9881;&#65039;</button>
+    </div>
+  </header>
 
-<main id="main"></main>
+  <main id="main" aria-live="polite"></main>
 
-<nav id="tabbar"></nav>
+  <nav id="tabbar">
+    <button class="tab-btn" data-tab="now" aria-label="上演中">
+      <span class="tab-icon">&#127914;</span><span class="tab-label">上演中</span>
+    </button>
+    <button class="tab-btn" data-tab="artists" aria-label="出演者">
+      <span class="tab-icon">&#128197;</span><span class="tab-label">出演者</span>
+    </button>
+    <button class="tab-btn" data-tab="map" aria-label="マップ">
+      <span class="tab-icon">&#128506;&#65039;</span><span class="tab-label">マップ</span>
+    </button>
+    <button class="tab-btn" data-tab="mytt" aria-label="マイタイムテーブル">
+      <span class="tab-icon">&#9733;</span><span class="tab-label">マイタイムテーブル</span>
+    </button>
+  </nav>
+</div>
 
-<div id="modal" class="modal"></div>
+<div id="modal-root"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script type="module" src="js/app.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").then((reg) => reg.update().catch(() => {})).catch(() => {});
+    });
+  }
+</script>
 </body>
 </html>

@@ -1,117 +1,175 @@
 #!/usr/bin/env python3
 """
-公式データ → data/venues.json, data/performances.json への変換 + 差分検出。
+三茶de大道芸 公式サイトから data/performances.json を生成し、前回との差分を data/changes.json に積む。
 
-TODO: 三茶大道芸2026の公式データ提供元が確定したら、以下を実装する。
-- OFFICIAL_PERFORMERS_URL: 出演者情報の取得元URL
-- OFFICIAL_VENUES_URL: 会場情報の取得元URL（無ければ手動でMANUAL_COORDSに座標を用意する）
-- parse_raw(): 生データ(tools/raw/配下)をperformances/venuesの形に変換する処理
-現状はダミーのサンプルデータをそのまま維持するだけのスタブになっている。
+2026-09-24時点、公式サイト（https://arttown.jp/）は出演パフォーマー一覧（名前・ジャンル・国・紹介文）
+のみ公開で、タイムテーブル（出演日時・出演場所）は未公開。そのため OFFICIAL_TIMETABLE_URL は未設定のままとし、
+その間はデータを一切書き換えずに終了する（checked.json も更新しない＝「確認した」と偽らない）。
+
+タイムテーブル公開後にやること:
+  1. 公式の該当ページをブラウザで開き、実際のHTML構造（クラス名・入れ子・時刻表記）を確認する
+  2. OFFICIAL_TIMETABLE_URL を設定し、parse_timetable() を実マークアップに合わせて実装する
+  3. VENUE_MAP（公式の会場表記 → venues.json の id）を実表記に合わせて更新する
+  4. GitHub Actions の update-data を手動実行し、期待した件数が抽出できることを確認する
+
+実行:
+    python3 tools/build_data.py
 """
 import json
+import re
 import sys
+import unicodedata
+import urllib.request
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+RAW = ROOT / "tools" / "raw" / "timetable.html"
+DATA = ROOT / "data"
 JST = timezone(timedelta(hours=9))
-DATA_DIR = "data"
 
-# 会場公式ページに座標が無い/取得できない場合の手動補完テーブル。
-# key: venueId, value: (lat, lng)
-MANUAL_COORDS = {
-    # "S-06": (35.6440, 139.6720),
+OFFICIAL_TIMETABLE_URL = None  # 例: "https://arttown.jp/timetable"（公開後に設定）
+USER_AGENT = "SanchaDaidougeiNaviBot/1.0 (+https://github.com/ishinttr-eng/sancha-daidougei-nav)"
+
+# 公式の会場表記（正規化後）→ venues.json の id。タイムテーブル公開後に実表記に合わせる。
+VENUE_MAP = {
+    "烏山川緑道": "S-01",
+    "あい・あい・ロード": "S-02",
+    "ふれあい広場": "S-03",
+    "nttひろば": "S-04",
+    "エコー仲見世": "S-05",
+    "サンタワーズ広場": "S-06",
+    "栄通り": "S-07",
 }
 
-OFFICIAL_PERFORMERS_URL = None  # TODO: 公式フィードURLを設定
-OFFICIAL_VENUES_URL = None  # TODO: 公式フィードURLを設定（無い場合はNoneのままMANUAL_COORDSを使う）
 
-
-def load_json(path):
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return None
-
-
-def save_json(path, data):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+def pad_time(t: str) -> str:
+    """9:50 → 09:50（文字列ソートに使う箇所があるため必ずゼロ埋めする）"""
+    h, m = t.split(":")
+    return f"{int(h):02d}:{int(m):02d}"
 
 
 def fetch_raw():
-    """公式データを取得する。URLが未設定ならNoneを返し、既存データをそのまま維持する。"""
-    if not OFFICIAL_PERFORMERS_URL:
-        print("OFFICIAL_PERFORMERS_URL が未設定のため、既存の data/performances.json をそのまま維持します。")
+    if not OFFICIAL_TIMETABLE_URL:
         return None
-    import urllib.request
-
-    with urllib.request.urlopen(OFFICIAL_PERFORMERS_URL) as res:
-        return res.read()
-
-
-def parse_raw(raw_bytes):
-    """生データをperformances/venuesの形式に変換する。フェスごとに実装が異なる。"""
-    raise NotImplementedError("公式データの形式が確定したら実装してください")
+    req = urllib.request.Request(OFFICIAL_TIMETABLE_URL, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=30) as res:
+        html = res.read().decode("utf-8")
+    RAW.parent.mkdir(parents=True, exist_ok=True)
+    RAW.write_text(html, encoding="utf-8")
+    return html
 
 
-def detect_diff(old_perfs, new_perfs):
-    """id+dateキーで比較し、name/venueId/start/end/genreの変化を検出する。
-    同一枠での追加＋削除は「交代(swap)」として1件にまとめる。"""
-    old_by_key = {(p["id"], p["date"]): p for p in old_perfs}
-    new_by_key = {(p["id"], p["date"]): p for p in new_perfs}
+def parse_timetable(html: str):
+    """公式タイムテーブルHTML → performances のリスト。
+    推測で書かない。公開後に実マークアップを確認してから実装すること。"""
+    raise NotImplementedError("公式タイムテーブル公開後、実際のHTML構造を確認してから実装してください")
 
+
+QUOTE_TRANSLATION = str.maketrans({
+    "‘": "'", "’": "'", "ʼ": "'", "`": "'",
+    "“": '"', "”": '"',
+})
+
+
+def normalize_for_diff(name: str) -> str:
+    """表記ゆれ（全角/半角、スペースの数・全角スペース混在、引用符の字形違い等）を
+    差分として誤検出しないための比較用正規化。表示用のテキストには使わない。"""
+    s = unicodedata.normalize("NFKC", name or "")
+    s = s.translate(QUOTE_TRANSLATION)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def diff_performances(old_list, new_list):
+    def nkey(p):
+        return (p["venueId"], p["date"], p["start"], normalize_for_diff(p["name"]))
+
+    old_by_key = {nkey(p): p for p in old_list}
+    new_by_key = {nkey(p): p for p in new_list}
+    added = [p for k, p in new_by_key.items() if k not in old_by_key]
+    removed = [p for k, p in old_by_key.items() if k not in new_by_key]
     items = []
-    for key, np_ in new_by_key.items():
-        if key not in old_by_key:
-            items.append({"kind": "added", "summary": f"{np_['name']} が追加されました"})
-    for key, op in old_by_key.items():
-        if key not in new_by_key:
-            items.append({"kind": "removed", "summary": f"{op['name']} が削除されました"})
-    for key in set(old_by_key) & set(new_by_key):
-        op, np_ = old_by_key[key], new_by_key[key]
-        changed_fields = [f for f in ("name", "venueId", "start", "end", "genre") if op.get(f) != np_.get(f)]
-        if changed_fields:
+    # 同一枠(venueId+date+start)で名前（表記ゆれ除く）が変わっていれば「交代」扱い
+    old_slots = {(p["venueId"], p["date"], p["start"]): p for p in old_list}
+    new_slots = {(p["venueId"], p["date"], p["start"]): p for p in new_list}
+    handled_names = set()
+    for slot, np in new_slots.items():
+        op = old_slots.get(slot)
+        if op and normalize_for_diff(op["name"]) != normalize_for_diff(np["name"]):
+            items.append({"kind": "swap", "text": f"{op['name']} → {np['name']}（{slot[2]}〜）"})
+            handled_names.add(np["name"])
+            handled_names.add(op["name"])
+    for p in added:
+        if p["name"] not in handled_names:
+            items.append({"kind": "added", "text": f"{p['name']} が追加されました"})
+    for p in removed:
+        if p["name"] not in handled_names:
+            items.append({"kind": "removed", "text": f"{p['name']} が削除されました"})
+
+    # フィールド単位の変更検出（同一枠・同一名のまま、終了時刻やジャンル等だけが変わったケース）
+    MODIFIED_FIELDS = [
+        ("end", "終了時刻"),
+        ("genre", "ジャンル"),
+        ("region", "国・地域"),
+    ]
+    for key, np in new_by_key.items():
+        op = old_by_key.get(key)
+        if not op:
+            continue
+        changes = []
+        for field, label in MODIFIED_FIELDS:
+            ov, nv = op.get(field, ""), np.get(field, "")
+            if ov != nv:
+                changes.append(f"{label}: {ov or '（空欄）'} → {nv or '（空欄）'}")
+        if changes:
             items.append({
                 "kind": "modified",
-                "summary": f"{op['name']} の {', '.join(changed_fields)} が変更されました",
+                "text": f"{np['name']}（{np['start']}〜）が変更されました: " + " / ".join(changes),
             })
     return items
 
 
 def main():
-    perf_path = f"{DATA_DIR}/performances.json"
-    checked_path = f"{DATA_DIR}/checked.json"
-    changes_path = f"{DATA_DIR}/changes.json"
+    html = fetch_raw()
+    if html is None:
+        print("[build_data] OFFICIAL_TIMETABLE_URL が未設定のため何もしません（公式タイムテーブル未公開）。")
+        return 0
 
-    old = load_json(perf_path) or {"performances": []}
+    performances = parse_timetable(html)
+    if not performances:
+        print("[build_data] 出演情報を1件も抽出できませんでした。parse_timetable() を見直してください。", file=sys.stderr)
+        return 1
 
-    raw = fetch_raw()
-    if raw is None:
-        # データ取得元未設定: 差分検出はスキップし、checkedAtだけ更新する
-        save_json(checked_path, {"checkedAt": datetime.now(JST).isoformat()})
-        print("checked.json のみ更新しました（データソース未設定）。")
-        return
+    perf_path = DATA / "performances.json"
+    old_list = []
+    if perf_path.exists():
+        try:
+            old_list = json.loads(perf_path.read_text(encoding="utf-8")).get("performances", [])
+        except Exception:
+            old_list = []
 
-    new_perfs, new_venues = parse_raw(raw)
-    diff_items = detect_diff(old["performances"], new_perfs)
+    now = datetime.now(JST).isoformat()
+    perf_path.write_text(json.dumps({"updatedAt": now, "performances": performances}, ensure_ascii=False, indent=2), encoding="utf-8")
+    (DATA / "checked.json").write_text(json.dumps({"checkedAt": now}, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    save_json(perf_path, {"updatedAt": datetime.now(JST).isoformat(), "performances": new_perfs})
-    save_json(f"{DATA_DIR}/venues.json", {"updatedAt": datetime.now(JST).isoformat(), "venues": new_venues})
-    save_json(checked_path, {"checkedAt": datetime.now(JST).isoformat()})
-
-    if diff_items:
-        changes = load_json(changes_path) or {"history": []}
-        changes["history"].insert(0, {
-            "checkedAt": datetime.now(JST).isoformat(),
-            "sourceUpdatedAt": datetime.now(JST).isoformat(),
-            "items": diff_items,
-        })
+    items = diff_performances(old_list, performances)
+    if items:
+        changes_path = DATA / "changes.json"
+        changes = {"history": []}
+        if changes_path.exists():
+            try:
+                changes = json.loads(changes_path.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+        changes.setdefault("history", []).insert(0, {"checkedAt": now, "items": items})
         changes["history"] = changes["history"][:20]
-        save_json(changes_path, changes)
-        print(f"{len(diff_items)}件の変更を検出しました。")
+        changes_path.write_text(json.dumps(changes, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"[build_data] 差分 {len(items)} 件を検出しました")
     else:
-        print("変更はありませんでした。")
+        print("[build_data] 差分なし")
+    print(f"[build_data] {len(performances)} 件の出演情報を書き出しました")
+    return 0
 
 
 if __name__ == "__main__":

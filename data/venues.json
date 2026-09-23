@@ -1,10 +1,103 @@
 {
-  "updatedAt": "2026-09-09T00:00:00+09:00",
+  "updatedAt": "2026-09-24T00:00:00+09:00",
   "venues": [
-    { "id": "S-01", "stageNo": 1, "name": "キャロットタワー前広場", "lat": 35.6437, "lng": 139.6699, "days": ["2026-10-03", "2026-10-04"] },
-    { "id": "S-02", "stageNo": 2, "name": "世田谷通り特設ステージ", "lat": 35.6428, "lng": 139.6705, "days": ["2026-10-03", "2026-10-04"] },
-    { "id": "S-03", "stageNo": 3, "name": "三軒茶屋駅前広場", "lat": 35.6432, "lng": 139.6695, "days": ["2026-10-03", "2026-10-04"] },
-    { "id": "S-04", "stageNo": 4, "name": "エコー仲見世通り", "lat": 35.6440, "lng": 139.6710, "days": ["2026-10-03", "2026-10-04"] },
-    { "id": "S-05", "stageNo": 5, "name": "三茶パティオ広場", "lat": 35.6445, "lng": 139.6690, "days": ["2026-10-04"] }
+    {
+      "id": "S-01",
+      "stageNo": 1,
+      "name": "烏山川緑道・ゴリラビル前・アサヒヤ前",
+      "street": "太子堂商店街",
+      "lat": 35.6474,
+      "lng": 139.6694,
+      "days": [
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "approx": true,
+      "note": "座標はOSM(Nominatim)で調べた付近の推定値。公式の会場マップ（arttown.jp/new/shopping-street）で正確な位置を要確認。"
+    },
+    {
+      "id": "S-02",
+      "stageNo": 2,
+      "name": "あい・あい・ロード",
+      "street": "太子堂中央商店街",
+      "lat": 35.6467,
+      "lng": 139.6715,
+      "days": [
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "approx": true,
+      "note": "座標はOSM(Nominatim)で調べた付近の推定値。公式の会場マップ（arttown.jp/new/shopping-street）で正確な位置を要確認。"
+    },
+    {
+      "id": "S-03",
+      "stageNo": 3,
+      "name": "ふれあい広場・五叉路前・茶沢通り入口",
+      "street": "三軒茶屋銀座商店街",
+      "lat": 35.6448,
+      "lng": 139.6705,
+      "days": [
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "approx": true,
+      "note": "座標はOSM(Nominatim)で調べた付近の推定値。公式の会場マップ（arttown.jp/new/shopping-street）で正確な位置を要確認。"
+    },
+    {
+      "id": "S-04",
+      "stageNo": 4,
+      "name": "NTT広場",
+      "street": "三軒茶屋三和会商店街",
+      "lat": 35.6429,
+      "lng": 139.669,
+      "days": [
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "approx": true,
+      "note": "座標はOSM(Nominatim)で調べた付近の推定値。公式の会場マップ（arttown.jp/new/shopping-street）で正確な位置を要確認。"
+    },
+    {
+      "id": "S-05",
+      "stageNo": 5,
+      "name": "エコー仲見世",
+      "street": "三軒茶屋エコー仲見世商店街",
+      "lat": 35.64334,
+      "lng": 139.67037,
+      "days": [
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "approx": true,
+      "note": "座標はOSM(Nominatim)で調べた付近の推定値。公式の会場マップ（arttown.jp/new/shopping-street）で正確な位置を要確認。"
+    },
+    {
+      "id": "S-06",
+      "stageNo": 6,
+      "name": "サンタワーズ広場",
+      "street": "三軒茶屋商栄会",
+      "lat": 35.6432,
+      "lng": 139.6718,
+      "days": [
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "approx": true,
+      "note": "座標はOSM(Nominatim)で調べた付近の推定値。公式の会場マップ（arttown.jp/new/shopping-street）で正確な位置を要確認。"
+    },
+    {
+      "id": "S-07",
+      "stageNo": 7,
+      "name": "栄通り・太子堂一丁目公園",
+      "street": "三茶栄通り 三軒茶屋商店街",
+      "lat": 35.64174,
+      "lng": 139.67352,
+      "days": [
+        "2026-10-17",
+        "2026-10-18"
+      ],
+      "approx": true,
+      "note": "座標はOSM(Nominatim)で調べた付近の推定値。公式の会場マップ（arttown.jp/new/shopping-street）で正確な位置を要確認。"
+    }
   ]
 }

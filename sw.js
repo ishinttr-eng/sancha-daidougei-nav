@@ -1,7 +1,7 @@
-// Service Worker: VERSIONを上げるとactivate時に旧キャッシュを一括削除する。
-// データだけ変えてもUIの見た目は変わらないため、UI変更時は必ずVERSIONを上げること。
+// 三茶大道芸ナビ Service Worker
+// UI・見た目・ロジックを変更したら必ず VERSION を上げること
 const VERSION = "v1";
-const CACHE_NAME = `sancha-daidougei-${VERSION}`;
+const CACHE_NAME = `scd-${VERSION}`;
 
 const APP_SHELL = [
   "./",
@@ -12,8 +12,8 @@ const APP_SHELL = [
   "js/app.js",
   "js/store.js",
   "js/util.js",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-  "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css",
+  "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js",
 ];
 
 self.addEventListener("install", (event) => {
@@ -23,8 +23,8 @@ self.addEventListener("install", (event) => {
       await Promise.all(
         APP_SHELL.map((url) =>
           fetch(url, { cache: "reload" })
-            .then((res) => cache.put(url, res))
-            .catch(() => {})
+            .then((res) => (res.ok ? cache.put(url, res) : null))
+            .catch(() => null)
         )
       );
       self.skipWaiting();
@@ -35,35 +35,61 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      const names = await caches.keys();
-      await Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)));
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)));
       self.clients.claim();
     })()
   );
 });
 
+function isDataRequest(url) {
+  return url.pathname.includes("/data/");
+}
+function isTileRequest(url) {
+  return /tile\.openstreetmap\.org|\{s\}\.tile/.test(url.hostname) || url.hostname.endsWith("tile.openstreetmap.org");
+}
+
 self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
+  const req = event.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
 
-  // 地図タイルはキャッシュ対象外（容量対策）
-  if (url.hostname.includes("tile.openstreetmap.org")) return;
+  if (isTileRequest(url)) return; // 地図タイルはキャッシュしない（容量対策）
 
-  // /data/ 配下: ネットワーク優先、失敗時のみキャッシュにフォールバック
-  if (url.pathname.includes("/data/")) {
+  if (isDataRequest(url)) {
+    // ネットワーク優先、失敗時のみキャッシュにフォールバック
     event.respondWith(
-      fetch(event.request)
-        .then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+      (async () => {
+        try {
+          const res = await fetch(req);
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, res.clone());
           return res;
-        })
-        .catch(() => caches.match(event.request))
+        } catch {
+          const cached = await caches.match(req);
+          if (cached) return cached;
+          throw new Error("offline and no cache");
+        }
+      })()
     );
     return;
   }
 
-  // アプリシェル・地図ライブラリ: キャッシュ優先
+  // アプリシェル・地図ライブラリ等はキャッシュ優先
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    (async () => {
+      const cached = await caches.match(req);
+      if (cached) return cached;
+      try {
+        const res = await fetch(req);
+        if (res.ok && (url.origin === self.location.origin || APP_SHELL.includes(req.url))) {
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, res.clone());
+        }
+        return res;
+      } catch {
+        return cached || Response.error();
+      }
+    })()
   );
 });

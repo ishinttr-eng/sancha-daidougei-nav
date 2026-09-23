@@ -1,213 +1,166 @@
-// 状態管理・データ読み込み・現在地/お気に入り/天気
+// 三茶大道芸ナビ - 状態管理・データ読み込み
 
-import { perfKey, estimateWalkMin, nowMin, todayStr, DAYS } from "./util.js";
+import { toMin, perfKey, DAYS, WEATHER_LAT, WEATHER_LNG } from "./util.js";
 
-const FAV_KEY = "sancha-daidougei-favs";
-const SETTINGS_KEY = "sancha-daidougei-settings";
-const WEATHER_LAT = 35.6435; // 三軒茶屋付近。TODO: 実際の会場エリアに合わせて調整
-const WEATHER_LNG = 139.6702;
+const LS = {
+  favorites: "scd.favorites.v1",
+  settings: "scd.settings.v1",
+  seenChanges: "scd.seenChanges.v1",
+};
 
-export const store = {
+function loadJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function saveJSON(key, val) {
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch {
+    /* ignore quota errors */
+  }
+}
+
+export const state = {
   venues: [],
   performances: [],
   walktimes: null,
   routes: null,
-  tieup: [],
+  tieup: { stages: [] },
   checked: null,
   changes: null,
-  favorites: new Set(),
-  weather: null, // { byHour: {"HH": {code, temp}} }
-  location: null, // { lat, lng } または null
-  settings: {
-    fontSize: "normal", // "normal" | "large"
-    simTime: null, // "HH:MM" or null（実時刻を使う）
-    simLocation: null, // { lat, lng } or null
-  },
-
-  async init() {
-    this._loadSettings();
-    this._loadFavorites();
-    const [venuesRes, perfRes, walkRes, tieupRes, checkedRes, changesRes] = await Promise.all([
-      fetch("data/venues.json").then((r) => r.json()),
-      fetch("data/performances.json").then((r) => r.json()),
-      fetch("data/walktimes.json").then((r) => r.json()),
-      fetch("data/tieup.json").then((r) => r.json()).catch(() => ({ stages: [] })),
-      fetch("data/checked.json").then((r) => r.json()).catch(() => null),
-      fetch("data/changes.json").then((r) => r.json()).catch(() => null),
-    ]);
-    this.venues = venuesRes.venues || [];
-    this.performances = (perfRes.performances || []).map((p) => ({
-      ...p,
-      startMin: hmToMinSafe(p.start),
-      endMin: hmToMinSafe(p.end),
-    }));
-    this.walktimes = walkRes;
-    this.tieup = tieupRes.stages || [];
-    this.checked = checkedRes;
-    this.changes = changesRes;
-    try {
-      this.routes = await fetch("data/routes.json").then((r) => r.json());
-    } catch {
-      this.routes = null;
-    }
-    await this._loadWeather();
-  },
-
-  // ---- 時刻シミュレーション込みの「現在」 ----
-  currentMin() {
-    if (this.settings.simTime) return hmToMinSafe(this.settings.simTime);
-    return nowMin();
-  },
-  currentDate() {
-    return DAYS.includes(todayStr()) ? todayStr() : DAYS[0];
-  },
-  currentLocation() {
-    return this.settings.simLocation || this.location;
-  },
-
-  // ---- 会場 ----
-  venueById(id) {
-    return this.venues.find((v) => v.id === id);
-  },
-
-  // ---- 徒歩時間 ----
-  walkMinBetween(idA, idB) {
-    if (idA === idB) return 0;
-    if (this.routes?.routes) {
-      const key1 = [idA, idB].sort().join("|");
-      const r = this.routes.routes[key1];
-      if (r) return r.durMin;
-    }
-    if (this.walktimes?.ids) {
-      const i = this.walktimes.ids.indexOf(idA);
-      const j = this.walktimes.ids.indexOf(idB);
-      if (i >= 0 && j >= 0) return this.walktimes.minutes[i][j];
-    }
-    const a = this.venueById(idA);
-    const b = this.venueById(idB);
-    if (a && b) return estimateWalkMin(a.lat, a.lng, b.lat, b.lng);
-    return null;
-  },
-
-  walkMinFromLocation(lat, lng, venueId) {
-    const v = this.venueById(venueId);
-    if (!v) return null;
-    return estimateWalkMin(lat, lng, v.lat, v.lng);
-  },
-
-  // ---- お気に入り ----
-  isFavorite(p) {
-    return this.favorites.has(perfKey(p));
-  },
-  toggleFavorite(p) {
-    const key = perfKey(p);
-    if (this.favorites.has(key)) this.favorites.delete(key);
-    else this.favorites.add(key);
-    this._saveFavorites();
-  },
-  favoritePerformances() {
-    return this.performances.filter((p) => this.favorites.has(perfKey(p)));
-  },
-  exportFavorites() {
-    return JSON.stringify({ fav: [...this.favorites] });
-  },
-  importFavorites(keys, mode = "merge") {
-    if (mode === "replace") this.favorites = new Set(keys);
-    else for (const k of keys) this.favorites.add(k);
-    this._saveFavorites();
-  },
-  favoriteShareUrl() {
-    const url = new URL(location.href);
-    url.searchParams.set("fav", [...this.favorites].join(","));
-    return url.toString();
-  },
-  importFromUrl() {
-    const params = new URLSearchParams(location.search);
-    const fav = params.get("fav");
-    if (fav) return fav.split(",").filter(Boolean);
-    return null;
-  },
-
-  _loadFavorites() {
-    try {
-      const raw = localStorage.getItem(FAV_KEY);
-      this.favorites = new Set(raw ? JSON.parse(raw) : []);
-    } catch {
-      this.favorites = new Set();
-    }
-  },
-  _saveFavorites() {
-    try {
-      localStorage.setItem(FAV_KEY, JSON.stringify([...this.favorites]));
-    } catch {
-      /* noop */
-    }
-  },
-
-  // ---- 設定 ----
-  _loadSettings() {
-    try {
-      const raw = localStorage.getItem(SETTINGS_KEY);
-      if (raw) Object.assign(this.settings, JSON.parse(raw));
-    } catch {
-      /* noop */
-    }
-  },
-  saveSettings() {
-    try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings));
-    } catch {
-      /* noop */
-    }
-  },
-
-  // ---- 現在地 ----
-  requestLocation() {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null);
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          this.location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          resolve(this.location);
-        },
-        () => resolve(null),
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    });
-  },
-
-  // ---- 天気（Open-Meteo、APIキー不要） ----
-  async _loadWeather() {
-    try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LNG}&hourly=temperature_2m,weathercode&timezone=Asia%2FTokyo`;
-      const res = await fetch(url);
-      const json = await res.json();
-      const byHour = {};
-      (json.hourly?.time || []).forEach((t, i) => {
-        const hh = t.slice(11, 13);
-        const date = t.slice(0, 10);
-        byHour[`${date}T${hh}`] = {
-          code: json.hourly.weathercode[i],
-          temp: json.hourly.temperature_2m[i],
-        };
-      });
-      this.weather = { byHour };
-    } catch {
-      this.weather = null;
-    }
-  },
-  weatherAt(dateStr, startMin) {
-    if (!this.weather) return null;
-    const hh = String(Math.floor(startMin / 60)).padStart(2, "0");
-    return this.weather.byHour[`${dateStr}T${hh}`] || null;
-  },
+  appChangelog: null,
+  performancesUpdatedAt: null,
+  favorites: new Set(loadJSON(LS.favorites, [])),
+  settings: Object.assign(
+    {
+      fontSize: "normal", // normal | large
+      simTime: null, // "2026-10-17T13:00" 等
+      simGeo: null, // {lat,lng}
+      autoLocate: false,
+      theme: "system",
+    },
+    loadJSON(LS.settings, {})
+  ),
+  seenChangeAt: loadJSON(LS.seenChanges, null),
+  currentGeo: null,
 };
 
-function hmToMinSafe(hm) {
-  if (!hm) return null;
-  const [h, m] = hm.split(":").map(Number);
-  return h * 60 + m;
+export function persistFavorites() {
+  saveJSON(LS.favorites, [...state.favorites]);
+}
+export function persistSettings() {
+  saveJSON(LS.settings, state.settings);
+}
+export function persistSeenChanges() {
+  saveJSON(LS.seenChanges, state.seenChangeAt);
+}
+
+export function toggleFavorite(p) {
+  const key = perfKey(p);
+  if (state.favorites.has(key)) state.favorites.delete(key);
+  else state.favorites.add(key);
+  persistFavorites();
+}
+export function isFavorite(p) {
+  return state.favorites.has(perfKey(p));
+}
+
+async function fetchJSON(path) {
+  const res = await fetch(path, { cache: "no-cache" });
+  if (!res.ok) throw new Error(`fetch failed: ${path}`);
+  return res.json();
+}
+
+export async function loadAll() {
+  const [venues, performances] = await Promise.all([
+    fetchJSON("data/venues.json"),
+    fetchJSON("data/performances.json"),
+  ]);
+  state.venues = venues.venues;
+  state.performances = performances.performances.map((p) => ({
+    ...p,
+    startMin: toMin(p.start),
+    endMin: toMin(p.end),
+  }));
+  state.performancesUpdatedAt = performances.updatedAt || null;
+
+  const optional = async (path, fallback) => {
+    try {
+      return await fetchJSON(path);
+    } catch {
+      return fallback;
+    }
+  };
+  const [walktimes, routes, tieup, checked, changes, appChangelog] = await Promise.all([
+    optional("data/walktimes.json", null),
+    optional("data/routes.json", { routes: {} }),
+    optional("data/tieup.json", { stages: [] }),
+    optional("data/checked.json", null),
+    optional("data/changes.json", { history: [] }),
+    optional("data/app_changelog.json", { entries: [] }),
+  ]);
+  state.walktimes = walktimes;
+  state.routes = routes;
+  state.tieup = tieup;
+  state.checked = checked;
+  state.changes = changes;
+  state.appChangelog = appChangelog;
+}
+
+export function venueById(id) {
+  return state.venues.find((v) => v.id === id);
+}
+
+export function walkMinutes(idA, idB) {
+  if (!state.walktimes || idA === idB) return 0;
+  const { ids, minutes } = state.walktimes;
+  const i = ids.indexOf(idA);
+  const j = ids.indexOf(idB);
+  if (i === -1 || j === -1) return null;
+  return minutes[i][j];
+}
+
+export function routeBetween(idA, idB) {
+  if (!state.routes) return null;
+  const key = [idA, idB].sort().join("|");
+  return state.routes.routes[key] || null;
+}
+
+export async function fetchWeather() {
+  // Open-Meteoの予報は16日先まで。範囲外の日付を投げると400になるので、開催日が近づくまでは取得しない
+  const firstDay = new Date(`${DAYS[0]}T00:00:00+09:00`);
+  if (firstDay - Date.now() > 15 * 24 * 60 * 60 * 1000) return null;
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LNG}&hourly=temperature_2m,precipitation_probability,weathercode&timezone=Asia%2FTokyo&start_date=${DAYS[0]}&end_date=${DAYS[DAYS.length - 1]}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const map = {};
+    data.hourly.time.forEach((t, i) => {
+      map[t] = {
+        temp: data.hourly.temperature_2m[i],
+        pop: data.hourly.precipitation_probability[i],
+        code: data.hourly.weathercode[i],
+      };
+    });
+    return map;
+  } catch {
+    return null;
+  }
+}
+
+export function weatherIcon(code) {
+  if (code == null) return "";
+  if (code === 0) return "☀️";
+  if ([1, 2].includes(code)) return "🌤️";
+  if (code === 3) return "☁️";
+  if ([45, 48].includes(code)) return "🌫️";
+  if ([51, 53, 55, 56, 57, 61, 63, 65, 80, 81, 82].includes(code)) return "🌧️";
+  if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️";
+  if ([95, 96, 99].includes(code)) return "⛈️";
+  return "☁️";
 }

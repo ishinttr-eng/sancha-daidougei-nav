@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <rect width="128" height="128" rx="24" fill="#106b64"/>
-  <text x="64" y="82" font-size="64" text-anchor="middle" font-family="sans-serif" fill="#eef1ec">茶</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" rx="40" fill="#1f1530"/>
+  <circle cx="100" cy="100" r="72" fill="none" stroke="#ff8a3d" stroke-width="6"/>
+  <text x="100" y="128" font-size="104" text-anchor="middle" font-family="'Hiragino Sans','Noto Sans JP',sans-serif">&#129337;</text>
 </svg>

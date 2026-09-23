@@ -1,13 +1,16 @@
 {
-  "name": "三茶大道芸2026ナビ",
-  "short_name": "三茶ナビ",
-  "description": "三茶大道芸2026 会場ナビゲーションアプリ",
+  "name": "三茶大道芸ナビ 2026",
+  "short_name": "三茶大道芸ナビ",
+  "description": "第30回 三茶de大道芸2026 非公式ナビゲーター",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#eef1ec",
-  "theme_color": "#106b64",
+  "orientation": "portrait",
+  "background_color": "#1f1530",
+  "theme_color": "#1f1530",
+  "lang": "ja",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ]
 }

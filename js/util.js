@@ -1,31 +1,24 @@
-// 汎用ユーティリティ: 時刻変換・検索正規化・距離計算・DOM生成ヘルパー
+// 三茶大道芸ナビ - 汎用ユーティリティ
 
-export const DAYS = ["2026-10-03", "2026-10-04"]; // TODO: 実際の開催日程に差し替え
-export const DAY_LABELS = { "2026-10-03": "1日目（土）", "2026-10-04": "2日目（日）" };
+export const DAYS = ["2026-10-17", "2026-10-18"];
+export const DAY_LABELS = { "2026-10-17": "10/17(土)", "2026-10-18": "10/18(日)" };
 
-export function hmToMin(hm) {
-  const [h, m] = hm.split(":").map(Number);
+// 天気取得地点（三軒茶屋駅付近。全会場が徒歩圏内のため1地点で代表させる）
+export const WEATHER_LAT = 35.6437;
+export const WEATHER_LNG = 139.6710;
+
+export function toMin(hhmm) {
+  if (!hhmm) return null;
+  const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
 }
 
-export function minToHm(min) {
+export function minToHHMM(min) {
   const h = Math.floor(min / 60) % 24;
   const m = min % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-export function nowMin(date = new Date()) {
-  return date.getHours() * 60 + date.getMinutes();
-}
-
-export function todayStr(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-// NFKC正規化 → 小文字化 → 全角カタカナをひらがな相当にシフト、で表記ゆれを吸収する
 export function normalize(s) {
   if (!s) return "";
   return s
@@ -35,44 +28,84 @@ export function normalize(s) {
     .replace(/\s+/g, "");
 }
 
-// お気に入りの複合キー: 同じ出演者IDが複数日・複数枠に再登場するケースに対応
 export function perfKey(p) {
   return `${p.id}__${p.date}__${p.start}`;
 }
 
-// Haversine距離（km）
-export function haversineKm(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+const R = 6371000;
+export function haversine(lat1, lng1, lat2, lng2) {
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.asin(Math.sqrt(a));
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// 実測ルートが無い場合の徒歩時間概算: 直線距離 × 道のり補正1.3 ÷ 徒歩速度80m/分
+// 実測ルートが無い場合の概算: 直線距離 x 補正係数1.3 / 徒歩速度80m/分
 export function estimateWalkMin(lat1, lng1, lat2, lng2) {
-  const km = haversineKm(lat1, lng1, lat2, lng2);
-  const m = km * 1000 * 1.3;
-  return Math.max(1, Math.round(m / 80));
+  const distM = haversine(lat1, lng1, lat2, lng2);
+  return Math.max(1, Math.round((distM * 1.3) / 80));
 }
 
 export function el(tag, attrs = {}, children = []) {
   const node = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs || {})) {
+  for (const [k, v] of Object.entries(attrs)) {
     if (k === "class") node.className = v;
     else if (k === "html") node.innerHTML = v;
     else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2), v);
-    else if (v !== null && v !== undefined) node.setAttribute(k, v);
+    else if (v === false || v == null) continue;
+    else if (v === true) node.setAttribute(k, "");
+    else node.setAttribute(k, v);
   }
   for (const c of [].concat(children)) {
-    if (c === null || c === undefined) continue;
+    if (c == null) continue;
     node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
   }
   return node;
 }
 
-export function fmtDate(dateStr) {
-  return DAY_LABELS[dateStr] || dateStr;
+export function fmtRange(start, end) {
+  return `${start}–${end}`;
+}
+
+export function todayStr(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function nowMin(d = new Date()) {
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+// 開催中/未開催/終了 の全体状態
+export function isVenueFinished(performances, venueId, date, curDate, curMin) {
+  const list = performances.filter((p) => p.venueId === venueId && (date ? p.date === date : true));
+  if (list.length === 0) return false;
+  return list.every((p) => {
+    if (p.date < curDate) return true;
+    if (p.date === curDate) return p.endMin <= curMin;
+    return false;
+  });
+}
+
+// 最終日の全演目が終わっていれば全日程終了。演目データが無い場合は日付だけで判定する
+export function isFestivalOver(performances, curDate, curMin) {
+  const lastDay = DAYS[DAYS.length - 1];
+  if (curDate > lastDay) return true;
+  if (curDate < lastDay) return false;
+  const lastDayPerfs = performances.filter((p) => p.date === lastDay);
+  if (!lastDayPerfs.length) return false;
+  return lastDayPerfs.every((p) => p.endMin <= curMin);
+}
+
+export function debounce(fn, ms) {
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), ms);
+  };
 }
