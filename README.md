@@ -12,24 +12,25 @@
 - ★ マイタイムテーブル — リスト/スケジュール表、演目間の徒歩時間、移動時間不足・重複の警告
 - 共通 — 設定（文字サイズ・時刻/現在地シミュレーション・共有・書き出し）、更新履歴（出演者情報の変更＋アプリ更新）
 
-## データの状況（2026-09-24時点）
+## データの状況（2026-10-02時点）
+
+公式サイト（https://arttown.jp/archives/9908 ）が会場案内図・タイムテーブルを**画像(JPG)とパンフレットPDF**として公開した。
+HTML/JSONでの構造化データは提供されていないため、JSF Navi由来の「HTMLを自動フェッチしてパース」という仕組みは使えず、
+**PDF内のタイムテーブル画像を目視で転記**して実データ化した（詳細は `tools/build_data.py` の冒頭コメント）。
 
 | ファイル | 状態 |
 |---|---|
-| `data/venues.json` | 公式の参加商店街7会場。**座標はOSM(Nominatim)で調べた推定値**（`approx: true`）。公式会場マップで要確認 |
-| `data/performances.json` | **サンプルデータ**（`"sample": true`）。公式タイムテーブルが未公開のため |
-| `data/routes.json` / `walktimes.json` | OSRMの実測徒歩ルート（21区間）。会場座標を直したら `tools/build_routes.py` を再実行 |
+| `data/venues.json` | 公式タイムテーブルのA〜L表記＋ヘブンアーティストIN三茶の4地点、計16会場。座標はOSM(Nominatim)で実在施設名と照合（9会場）/ 会場案内図からの推定（7会場、`approx: true`）。推定分は要現地確認 |
+| `data/performances.json` | **実データ**（120件、2026-10-17/18）。ジャンル・国(region)・紹介文(intro)は未入力（`arttown.jp/performer` の個別ページ40件超を別途確認する必要あり）。「神出鬼没ウォーキングアクト」「公募ウォーキングアクト」「終日の三茶ストリート出店(あめ細工/ボディペイント/占い)」は固定の会場・時刻を持たないため未収録 |
+| `data/routes.json` / `walktimes.json` | OSRMの実測徒歩ルート（新16会場・120ペア全て取得済み） |
 | `data/tieup.json` | 空（協賛ステージ等は未確認） |
 
-公式サイトの出演パフォーマー一覧（https://arttown.jp/performer ）は名前・ジャンル・国・紹介文のみで、出演日時・場所はまだ無い。
+### 今後やること
 
-### 公式タイムテーブル公開後にやること
-
-1. 公式ページの実際のHTML構造を確認してから `tools/build_data.py` の `OFFICIAL_TIMETABLE_URL` / `parse_timetable()` / `VENUE_MAP` を実装する（推測で書かない）
-2. GitHub Actions の `update-data` を手動実行し、期待件数が抽出されることを確認する
-3. 会場の正確な座標が分かったら `data/venues.json` を直し、`build-routes` ワークフロー（またはローカルで `python3.13 tools/build_routes.py`）を実行
-4. `js/app.js` の `OFFICIAL_TIMETABLE_URL` をタイムテーブルページに差し替え
-5. UIを変えたら `sw.js` の `VERSION` を上げ、`data/app_changelog.json` に追記
+1. `arttown.jp/performer` の個別ページからジャンル・国・紹介文を補完する
+2. 「approx: true」の7会場（B/C/E/G/H/HA1-4）の座標を現地確認し、正確な値に差し替える（差し替えたら `python3.13 tools/build_routes.py` を再実行）
+3. 神出鬼没ウォーキングアクト・公募ウォーキングアクト・終日の三茶ストリート出店をどう見せるか決めて実装する（現状データにも UI にも無い）
+4. 公式が新しい画像/PDFを出した場合、差分を目視確認して `performances.json` を手で更新する（自動スクレイピングは成立しないため）
 
 ### 実装しなかった任意機能
 

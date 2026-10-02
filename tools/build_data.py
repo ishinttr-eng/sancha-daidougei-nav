@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 """
-三茶de大道芸 公式サイトから data/performances.json を生成し、前回との差分を data/changes.json に積む。
+三茶de大道芸 公式タイムテーブルの反映スクリプト。
 
-2026-09-24時点、公式サイト（https://arttown.jp/）は出演パフォーマー一覧（名前・ジャンル・国・紹介文）
-のみ公開で、タイムテーブル（出演日時・出演場所）は未公開。そのため OFFICIAL_TIMETABLE_URL は未設定のままとし、
-その間はデータを一切書き換えずに終了する（checked.json も更新しない＝「確認した」と偽らない）。
+2026-10-02時点、公式サイトはタイムテーブル・会場案内図を「画像(JPG)」および
+「パンフレットPDF」として公開しており、HTML/JSONとして構造化されたデータは提供していない
+（https://arttown.jp/archives/9908 ）。そのため JSF Navi 2026の元ブループリントが想定していた
+「HTMLを定期フェッチしてパースする」自動化は成立しない。
 
-タイムテーブル公開後にやること:
-  1. 公式の該当ページをブラウザで開き、実際のHTML構造（クラス名・入れ子・時刻表記）を確認する
-  2. OFFICIAL_TIMETABLE_URL を設定し、parse_timetable() を実マークアップに合わせて実装する
-  3. VENUE_MAP（公式の会場表記 → venues.json の id）を実表記に合わせて更新する
-  4. GitHub Actions の update-data を手動実行し、期待した件数が抽出できることを確認する
+2026-10-02の実データ（data/venues.json・data/performances.json）は、公式PDF内の
+タイムテーブル画像を目視で転記して作成した（tools/raw/ に取得した生ファイルを保存、.gitignore対象）。
+ジャンル・国(region)・紹介文(intro)は未入力（arttown.jp/performer の個別ページ40件超を
+別途確認する必要があるため）。「神出鬼没ウォーキングアクト」「公募ウォーキングアクト」は
+固定の会場・時刻を持たないためperformances.jsonには含めていない。
+
+今後、公式が新しいタイムテーブル画像/PDFを出した場合にやること:
+  1. 新しい画像/PDFをダウンロードし、差分（出演者の追加・削除・変更）を目視で確認する
+  2. 変更があれば performances.json を手で更新し、diff_performances() で変更点を
+     changes.json に積む（このファイルの main() の構造を流用できる）
+  3. OFFICIAL_TIMETABLE_URL が将来HTML/JSON提供に変わった場合のみ、parse_timetable() を
+     実装して自動化する（現状は使われていない＝常にNone）
 
 実行:
     python3 tools/build_data.py
@@ -31,15 +39,26 @@ JST = timezone(timedelta(hours=9))
 OFFICIAL_TIMETABLE_URL = None  # 例: "https://arttown.jp/timetable"（公開後に設定）
 USER_AGENT = "SanchaDaidougeiNaviBot/1.0 (+https://github.com/ishinttr-eng/sancha-daidougei-nav)"
 
-# 公式の会場表記（正規化後）→ venues.json の id。タイムテーブル公開後に実表記に合わせる。
+# 公式の会場表記（正規化後）→ venues.json の id。2026-10-02の公式タイムテーブル画像の
+# A〜L表記＋ヘブンアーティストIN三茶の4地点にあわせて更新済み。
 VENUE_MAP = {
-    "烏山川緑道": "S-01",
-    "あい・あい・ロード": "S-02",
-    "ふれあい広場": "S-03",
-    "nttひろば": "S-04",
-    "エコー仲見世": "S-05",
-    "サンタワーズ広場": "S-06",
-    "栄通り": "S-07",
+    "プラザ": "A",
+    "あい・あいロード": "B",
+    "あい・あい・ロード": "B",
+    "グランダ三軒茶屋": "C",
+    "ふれあい広場": "D",
+    "ntt広場": "E",
+    "エコー仲見世": "F",
+    "サンタワーズ広場": "G",
+    "栄通り": "H",
+    "アウル・センター": "I",
+    "太子堂一丁目公園": "J",
+    "日本大学": "K",
+    "下馬図書館": "L",
+    "アサヒヤ前": "HA1",
+    "ゴリラビル前": "HA2",
+    "五叉路前": "HA3",
+    "茶沢通り入口": "HA4",
 }
 
 
