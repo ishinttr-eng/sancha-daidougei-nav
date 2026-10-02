@@ -63,3 +63,7 @@ macOS標準のPythonはTLSが古く、`build_routes.py` がOSRMとのハンド�
 - マップライブラリ: [Leaflet](https://leafletjs.com/) (BSD 2-Clause)
 - 天気: [Open-Meteo](https://open-meteo.com/) (CC BY 4.0)
 - 徒歩ルート: [OSRM](http://project-osrm.org/) via [FOSSGIS e.V.](https://routing.openstreetmap.de/)
+
+## ライセンス
+
+このリポジトリ自体のコードは [MIT License](LICENSE) です。上記クレジット欄の各データ・ライブラリは、それぞれ元のライセンス（ODbL・BSD・CC BY 4.0等）に従います。
