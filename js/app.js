@@ -854,12 +854,17 @@ function decodePolyline(str, precision = 5) {
 function initOrUpdateMap(mapDiv, date, min) {
   if (!window.L) return;
   if (!mapState.instance) {
-    // 初期表示は全会場の重心（会場が駅周辺600m圏に収まるのでズーム16で全体が見える）
     const vs = store.state.venues;
-    const centroid = vs.length
-      ? [vs.reduce((s, v) => s + v.lat, 0) / vs.length, vs.reduce((s, v) => s + v.lng, 0) / vs.length]
-      : [35.6437, 139.671];
-    const map = L.map(mapDiv, { inertiaMaxSpeed: 1500 }).setView(mapState.center || centroid, mapState.zoom || 16);
+    const map = L.map(mapDiv, { inertiaMaxSpeed: 1500 });
+    if (mapState.center) {
+      map.setView(mapState.center, mapState.zoom || 16);
+    } else if (vs.length) {
+      // 初期表示は全会場が収まるようfitBoundsで合わせる（会場によって駅から離れた場所もあるため、
+      // 固定ズームの重心表示だと見切れたり余白が偏ったりする）
+      map.fitBounds(L.latLngBounds(vs.map((v) => [v.lat, v.lng])), { padding: [32, 32] });
+    } else {
+      map.setView([35.6437, 139.671], 16);
+    }
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>',
