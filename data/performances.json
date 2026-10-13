@@ -1,7 +1,7 @@
 {
   "updatedAt": "2026-10-02T20:35:01.402715+09:00",
   "source": "公式パンフレット(PDF)タイムテーブル画像を目視転記 (2026-10-02)",
-  "note": "ジャンル・国(region)・紹介文(intro)は arttown.jp/performer の個別ページ(2026-10-02時点)より転記。「神出鬼没ウォーキングアクト」「公募ウォーキングアクト」「終日の三茶ストリート出店」は固定の会場・時刻が無いためこのデータには含めていない。",
+  "note": "ジャンル・国(region)は arttown.jp/performer の個別ページ(2026-10-02時点)より転記。紹介文は著作権配慮のため持たず、officialUrl（公式個別ページ）へ誘導する。「神出鬼没ウォーキングアクト」「公募ウォーキングアクト」「終日の三茶ストリート出店」は固定の会場・時刻が無いためこのデータには含めていない。",
   "performances": [
     {
       "venueId": "A",
@@ -13,10 +13,10 @@
       "kana": "",
       "genre": "現代サーカス",
       "region": "スウェーデン",
-      "intro": "3人のサーカスアーティストによる、スリリングな技と息の合ったコンビネーション。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9795"
     },
     {
       "venueId": "A",
@@ -28,10 +28,10 @@
       "kana": "",
       "genre": "アクロバット",
       "region": "日本",
-      "intro": "アクロバットとコメディのナイスフュージョン、その名も「アホロバット」で笑いと共にドキドキを！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2001"
     },
     {
       "venueId": "A",
@@ -43,10 +43,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "ポルトガル・イギリス",
-      "intro": "赤い唐辛子に翼をつけたら、蝶になっちゃった！？ダンスやフィジカルシアターもかけあわせた驚きのジャグリング。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9803"
     },
     {
       "venueId": "A",
@@ -58,10 +58,10 @@
       "kana": "",
       "genre": "唄とアコーディオン",
       "region": "日本",
-      "intro": "あの大ヒットドラマ「逃げ恥」のOP曲でもお馴染みの姉妹ユニット！サーカス風の独特な世界観。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/3465"
     },
     {
       "venueId": "A",
@@ -73,10 +73,10 @@
       "kana": "",
       "genre": "コメディサーカス",
       "region": "オーストラリア",
-      "intro": "愉快なコンビ、ケニー＆ジェニーによる、農場を舞台にしたドタバタサーカスコメディ。干し草を使ったアクロバットや巨大ニンジンのジャグリング！？",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9797"
     },
     {
       "venueId": "A",
@@ -88,10 +88,10 @@
       "kana": "",
       "genre": "舞踏",
       "region": "日本",
-      "intro": "大駱駝艦の舞踏手が、情熱的かつ野性的な踊りを、群れ踊り、躍動し、儀式的に踏み舞います。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/382"
     },
     {
       "venueId": "A",
@@ -103,10 +103,10 @@
       "kana": "",
       "genre": "中国雑技",
       "region": "中国",
-      "intro": "バランス・軟体・アクロバット、磨き抜かれた身体が魅せる、壮絶な技の数々。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/248"
     },
     {
       "venueId": "B",
@@ -118,10 +118,10 @@
       "kana": "",
       "genre": "マリンバ",
       "region": "日本",
-      "intro": "メロディとリズム、ドライブとパンチの効いたダイナミックなプレイでクラシックからJazz、POPSまでお馴染みの楽曲を幅広く演奏。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/185"
     },
     {
       "venueId": "B",
@@ -133,10 +133,10 @@
       "kana": "",
       "genre": "マイム・コメディ",
       "region": "日本",
-      "intro": "奇想天外なパントマイムコメディ！でも最後には愛にあふれる。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/244"
     },
     {
       "venueId": "B",
@@ -148,10 +148,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "街中に巻き起こすセクシー旋風。「No Sexy No Life」をモットーに全ての人々にセクシーを。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/332"
     },
     {
       "venueId": "B",
@@ -163,10 +163,10 @@
       "kana": "",
       "genre": "マリンバ",
       "region": "日本",
-      "intro": "メロディとリズム、ドライブとパンチの効いたダイナミックなプレイでクラシックからJazz、POPSまでお馴染みの楽曲を幅広く演奏。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/185"
     },
     {
       "venueId": "C",
@@ -178,10 +178,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "この男、見るからに怪しすぎる。でもこの面白さ、吸い寄せられて離れられない…。観客の吸引力が変わらない、ただひとつの大道芸人！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/1374"
     },
     {
       "venueId": "C",
@@ -193,10 +193,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "街中に巻き起こすセクシー旋風。「No Sexy No Life」をモットーに全ての人々にセクシーを。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/332"
     },
     {
       "venueId": "D",
@@ -208,10 +208,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "この男、見るからに怪しすぎる。でもこの面白さ、吸い寄せられて離れられない…。観客の吸引力が変わらない、ただひとつの大道芸人！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/1374"
     },
     {
       "venueId": "D",
@@ -223,10 +223,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "「Hi2」と「こ～すけ」による二人組。スピーディーでエレガント！カッコいいのに、面白い！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9788"
     },
     {
       "venueId": "D",
@@ -238,10 +238,10 @@
       "kana": "",
       "genre": "JAZZ",
       "region": "日本",
-      "intro": "トロンボーン＆トランペットを中心とした熱きブラス隊！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/308"
     },
     {
       "venueId": "D",
@@ -253,10 +253,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "あれっ！？Queenのフレディ・マーキュリー？全編Queenの楽曲で贈る、奇妙な屋外レストラン！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/3416"
     },
     {
       "venueId": "D",
@@ -268,10 +268,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "ポルトガル・イギリス",
-      "intro": "赤い唐辛子に翼をつけたら、蝶になっちゃった！？ダンスやフィジカルシアターもかけあわせた驚きのジャグリング。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9803"
     },
     {
       "venueId": "D",
@@ -283,10 +283,10 @@
       "kana": "",
       "genre": "マイム・コメディ",
       "region": "日本",
-      "intro": "大ヒットした歌謡曲にのせて、奇妙な青いジャージ姿の女がストーカーまがいに追ってくる！？冷静と情熱の間の、その隙間。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/243"
     },
     {
       "venueId": "E",
@@ -298,10 +298,10 @@
       "kana": "",
       "genre": "唄とアコーディオン",
       "region": "日本",
-      "intro": "あの大ヒットドラマ「逃げ恥」のOP曲でもお馴染みの姉妹ユニット！サーカス風の独特な世界観。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/3465"
     },
     {
       "venueId": "E",
@@ -313,10 +313,10 @@
       "kana": "",
       "genre": "舞踏",
       "region": "日本",
-      "intro": "大駱駝艦の舞踏手が、情熱的かつ野性的な踊りを、群れ踊り、躍動し、儀式的に踏み舞います。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/382"
     },
     {
       "venueId": "E",
@@ -328,10 +328,10 @@
       "kana": "",
       "genre": "コメディサーカス",
       "region": "オーストラリア",
-      "intro": "愉快なコンビ、ケニー＆ジェニーによる、農場を舞台にしたドタバタサーカスコメディ。干し草を使ったアクロバットや巨大ニンジンのジャグリング！？",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9797"
     },
     {
       "venueId": "E",
@@ -343,10 +343,10 @@
       "kana": "",
       "genre": "中国雑技",
       "region": "中国",
-      "intro": "バランス・軟体・アクロバット、磨き抜かれた身体が魅せる、壮絶な技の数々。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/248"
     },
     {
       "venueId": "E",
@@ -358,10 +358,10 @@
       "kana": "",
       "genre": "オペラ",
       "region": "日本",
-      "intro": "日本を代表するオペラ団体で複数の主役を務め、国外での出演経歴も豊富。クラシック一筋のオペラ歌手による圧巻の歌声。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/5426"
     },
     {
       "venueId": "E",
@@ -373,10 +373,10 @@
       "kana": "",
       "genre": "THE大道芸",
       "region": "日本",
-      "intro": "お客さんのテンションを自由自在に操りまくる生粋のテンションコントローラー！ミスター治外法権、ここに現る！！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/434"
     },
     {
       "venueId": "F",
@@ -388,10 +388,10 @@
       "kana": "",
       "genre": "スタチュー（人間銅像）",
       "region": "日本",
-      "intro": "重力を超越し電子機器を駆使した、宇宙飛行士の未来型人間銅像。ロケット燃料費を入れると、あなたの前で何かが起こる。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2318"
     },
     {
       "venueId": "F",
@@ -403,10 +403,10 @@
       "kana": "",
       "genre": "クロースアップマジック",
       "region": "日本",
-      "intro": "紳士的なスタイルから、時にはホラーな衣装を身にまといホラーマジックも飛び出すなど、バージョンを変えて目の前でマジックを披露！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/238"
     },
     {
       "venueId": "F",
@@ -418,10 +418,10 @@
       "kana": "",
       "genre": "フェスティバルミュージック",
       "region": "日本",
-      "intro": "東ヨーロッパの音楽を中心に、フェスティバルでは欠かせない楽曲を楽しく演奏！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/436"
     },
     {
       "venueId": "F",
@@ -433,10 +433,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "街中に巻き起こすセクシー旋風。「No Sexy No Life」をモットーに全ての人々にセクシーを。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/332"
     },
     {
       "venueId": "F",
@@ -448,10 +448,10 @@
       "kana": "",
       "genre": "THE大道芸",
       "region": "日本",
-      "intro": "お客さんのテンションを自由自在に操りまくる生粋のテンションコントローラー！ミスター治外法権、ここに現る！！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/434"
     },
     {
       "venueId": "F",
@@ -463,10 +463,10 @@
       "kana": "",
       "genre": "クロースアップマジック",
       "region": "日本",
-      "intro": "紳士的なスタイルから、時にはホラーな衣装を身にまといホラーマジックも飛び出すなど、バージョンを変えて目の前でマジックを披露！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/238"
     },
     {
       "venueId": "G",
@@ -478,10 +478,10 @@
       "kana": "",
       "genre": "中国雑技",
       "region": "中国",
-      "intro": "バランス・軟体・アクロバット、磨き抜かれた身体が魅せる、壮絶な技の数々。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/248"
     },
     {
       "venueId": "G",
@@ -493,10 +493,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "あれっ！？Queenのフレディ・マーキュリー？全編Queenの楽曲で贈る、奇妙な屋外レストラン！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/3416"
     },
     {
       "venueId": "G",
@@ -508,10 +508,10 @@
       "kana": "",
       "genre": "オペラ",
       "region": "日本",
-      "intro": "日本を代表するオペラ団体で複数の主役を務め、国外での出演経歴も豊富。クラシック一筋のオペラ歌手による圧巻の歌声。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/5426"
     },
     {
       "venueId": "G",
@@ -523,10 +523,10 @@
       "kana": "",
       "genre": "マイム・コメディ",
       "region": "日本",
-      "intro": "大ヒットした歌謡曲にのせて、奇妙な青いジャージ姿の女がストーカーまがいに追ってくる！？冷静と情熱の間の、その隙間。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/243"
     },
     {
       "venueId": "G",
@@ -538,10 +538,10 @@
       "kana": "",
       "genre": "ジャグリング＆バランス",
       "region": "日本",
-      "intro": "世界的な評価を受けるジャグラー＆サーカスアーティスト！どのテクニックも超一流。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9807"
     },
     {
       "venueId": "H",
@@ -553,10 +553,10 @@
       "kana": "",
       "genre": "チョークアート",
       "region": "日本",
-      "intro": "イタリアから始まった地面に名画を描くパフォーマンス。フィレンツェで修業をした実力派チョークアーティスト松本かなこによる公開制作（12:00〜18:00）。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/484"
     },
     {
       "venueId": "H",
@@ -568,10 +568,10 @@
       "kana": "",
       "genre": "パレード",
       "region": "日本",
-      "intro": "栄通りを練り歩くウォーキングパレード。Cocochi-kit（フェスティバルミュージック）／せせらぎ（足長ウォーキングアクト）／Chata（ウォーキングアクト）が参加。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": ""
     },
     {
       "venueId": "H",
@@ -583,10 +583,10 @@
       "kana": "",
       "genre": "パレード",
       "region": "日本",
-      "intro": "栄通りを練り歩くウォーキングパレード。ブラックエレファンツ（JAZZ）／STILTANGO（足長ウォーキングアクト）／Okk（ウォーキングアクト）が参加。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": ""
     },
     {
       "venueId": "I",
@@ -598,10 +598,10 @@
       "kana": "",
       "genre": "スタチュー（人間銅像）",
       "region": "日本",
-      "intro": "重力を超越し電子機器を駆使した、宇宙飛行士の未来型人間銅像。ロケット燃料費を入れると、あなたの前で何かが起こる。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2318"
     },
     {
       "venueId": "I",
@@ -613,10 +613,10 @@
       "kana": "",
       "genre": "クロースアップマジック",
       "region": "日本",
-      "intro": "紳士的なスタイルから、時にはホラーな衣装を身にまといホラーマジックも飛び出すなど、バージョンを変えて目の前でマジックを披露！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/238"
     },
     {
       "venueId": "I",
@@ -628,10 +628,10 @@
       "kana": "",
       "genre": "スタチュー（人間銅像）",
       "region": "日本",
-      "intro": "重力を超越し電子機器を駆使した、宇宙飛行士の未来型人間銅像。ロケット燃料費を入れると、あなたの前で何かが起こる。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2318"
     },
     {
       "venueId": "J",
@@ -643,10 +643,10 @@
       "kana": "",
       "genre": "エアリアル＆ジャグリング",
       "region": "日本",
-      "intro": "ジャグリングの「森田智博」とエアリアル「長すみ絵」による、大人気の屋外サーカス！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8138"
     },
     {
       "venueId": "J",
@@ -658,10 +658,10 @@
       "kana": "",
       "genre": "マイム・コメディ",
       "region": "日本",
-      "intro": "奇想天外なパントマイムコメディ！でも最後には愛にあふれる。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/244"
     },
     {
       "venueId": "J",
@@ -673,10 +673,10 @@
       "kana": "",
       "genre": "ジャグリング＆バランス",
       "region": "日本",
-      "intro": "世界的な評価を受けるジャグラー＆サーカスアーティスト！どのテクニックも超一流。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9807"
     },
     {
       "venueId": "J",
@@ -688,10 +688,10 @@
       "kana": "",
       "genre": "エアリアル＆ジャグリング",
       "region": "日本",
-      "intro": "ジャグリングの「森田智博」とエアリアル「長すみ絵」による、大人気の屋外サーカス！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8138"
     },
     {
       "venueId": "J",
@@ -703,10 +703,10 @@
       "kana": "",
       "genre": "クラウン・ジャグリング・コンテンポラリーダンス・人形劇",
       "region": "日本",
-      "intro": "「四腕」を自在に操るパフォーマー！多彩なジャンルで培った技術と表現を自在に掛け合わせ、唯一無二のパフォーマンスを追求。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9790"
     },
     {
       "venueId": "K",
@@ -718,10 +718,10 @@
       "kana": "",
       "genre": "ウォーキングアクト",
       "region": "日本",
-      "intro": "威勢の良い掛け声を上げながら街を駆け抜ける、孤高のマクスレスラー。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8135"
     },
     {
       "venueId": "K",
@@ -733,10 +733,10 @@
       "kana": "",
       "genre": "ウォーキングアクト",
       "region": "日本",
-      "intro": "次元を越えてきた河童。きゅうりの伝承は本当か、現代社会をユーモラスに観察する。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/315"
     },
     {
       "venueId": "K",
@@ -748,10 +748,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "「Hi2」と「こ～すけ」による二人組。スピーディーでエレガント！カッコいいのに、面白い！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9788"
     },
     {
       "venueId": "L",
@@ -763,10 +763,10 @@
       "kana": "",
       "genre": "クラウン・ジャグリング・コンテンポラリーダンス・人形劇",
       "region": "日本",
-      "intro": "「四腕」を自在に操るパフォーマー！多彩なジャンルで培った技術と表現を自在に掛け合わせ、唯一無二のパフォーマンスを追求。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9790"
     },
     {
       "venueId": "L",
@@ -778,10 +778,10 @@
       "kana": "",
       "genre": "アクロバット",
       "region": "日本",
-      "intro": "アクロバットとコメディのナイスフュージョン、その名も「アホロバット」で笑いと共にドキドキを！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2001"
     },
     {
       "venueId": "A",
@@ -793,10 +793,10 @@
       "kana": "",
       "genre": "現代サーカス",
       "region": "スウェーデン",
-      "intro": "3人のサーカスアーティストによる、スリリングな技と息の合ったコンビネーション。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9795"
     },
     {
       "venueId": "A",
@@ -808,10 +808,10 @@
       "kana": "",
       "genre": "Jazz",
       "region": "日本",
-      "intro": "竹内直 The Organic Resonations。SAXプレーヤー竹内直を中心に、今、日本で最も実力があると思われる最高のミュージシャン達による夢のLIVE。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/6880"
     },
     {
       "venueId": "A",
@@ -823,10 +823,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "ポルトガル・イギリス",
-      "intro": "赤い唐辛子に翼をつけたら、蝶になっちゃった！？ダンスやフィジカルシアターもかけあわせた驚きのジャグリング。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9803"
     },
     {
       "venueId": "A",
@@ -838,10 +838,10 @@
       "kana": "",
       "genre": "Jazz",
       "region": "日本",
-      "intro": "竹内直 The Organic Resonations。SAXプレーヤー竹内直を中心に、今、日本で最も実力があると思われる最高のミュージシャン達による夢のLIVE。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/6880"
     },
     {
       "venueId": "A",
@@ -853,10 +853,10 @@
       "kana": "",
       "genre": "コメディサーカス",
       "region": "オーストラリア",
-      "intro": "愉快なコンビ、ケニー＆ジェニーによる、農場を舞台にしたドタバタサーカスコメディ。干し草を使ったアクロバットや巨大ニンジンのジャグリング！？",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9797"
     },
     {
       "venueId": "A",
@@ -868,10 +868,10 @@
       "kana": "",
       "genre": "舞踏",
       "region": "日本",
-      "intro": "大駱駝艦の舞踏手が、情熱的かつ野性的な踊りを、群れ踊り、躍動し、儀式的に踏み舞います。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/382"
     },
     {
       "venueId": "A",
@@ -883,10 +883,10 @@
       "kana": "",
       "genre": "唄とアコーディオン",
       "region": "日本",
-      "intro": "あの大ヒットドラマ「逃げ恥」のOP曲でもお馴染みの姉妹ユニット！サーカス風の独特な世界観。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/3465"
     },
     {
       "venueId": "A",
@@ -898,10 +898,10 @@
       "kana": "",
       "genre": "中国雑技",
       "region": "中国",
-      "intro": "バランス・軟体・アクロバット、磨き抜かれた身体が魅せる、壮絶な技の数々。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/248"
     },
     {
       "venueId": "B",
@@ -913,10 +913,10 @@
       "kana": "",
       "genre": "JAZZ",
       "region": "日本",
-      "intro": "トロンボーン＆トランペットを中心とした熱きブラス隊！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/308"
     },
     {
       "venueId": "B",
@@ -928,10 +928,10 @@
       "kana": "",
       "genre": "マイムシアター",
       "region": "日本",
-      "intro": "人形の紳士と共に織りなす、切なく甘い大人の女の恋物語。上質なフランス映画のような世界観。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8089"
     },
     {
       "venueId": "B",
@@ -943,10 +943,10 @@
       "kana": "",
       "genre": "ジプシーミュージック",
       "region": "日本・イタリア",
-      "intro": "ハンガリー公認のジプシーヴァイオリニストYukaとイタリアの名手ギタリストGiovanniによる情熱的なジプシーミュージック。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/6067"
     },
     {
       "venueId": "B",
@@ -958,10 +958,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "日本",
-      "intro": "現代サーカスの演出家としても活躍する、ジャグリングを通して物語や景色を立ち上げる表現者。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/196"
     },
     {
       "venueId": "B",
@@ -973,10 +973,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "この男、見るからに怪しすぎる。でもこの面白さ、吸い寄せられて離れられない…。観客の吸引力が変わらない、ただひとつの大道芸人！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/1374"
     },
     {
       "venueId": "C",
@@ -988,10 +988,10 @@
       "kana": "",
       "genre": "オペラ",
       "region": "日本",
-      "intro": "日本を代表するオペラ団体で複数の主役を務め、国外での出演経歴も豊富。クラシック一筋のオペラ歌手による圧巻の歌声。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/5426"
     },
     {
       "venueId": "C",
@@ -1003,10 +1003,10 @@
       "kana": "",
       "genre": "タップダンスバラエティ",
       "region": "日本",
-      "intro": "観客と一緒に作り上げるリズムタップは必見！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8144"
     },
     {
       "venueId": "C",
@@ -1018,10 +1018,10 @@
       "kana": "",
       "genre": "クラウン（道化師）",
       "region": "日本",
-      "intro": "陽気なステップと気の利いた音楽。ほのぼのとしたキャラクターで魅せる、緩やかで可笑しい時間。世界に通じるジャパニーズクラウンの味！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/393"
     },
     {
       "venueId": "C",
@@ -1033,10 +1033,10 @@
       "kana": "",
       "genre": "ジプシーミュージック",
       "region": "日本・イタリア",
-      "intro": "ハンガリー公認のジプシーヴァイオリニストYukaとイタリアの名手ギタリストGiovanniによる情熱的なジプシーミュージック。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/6067"
     },
     {
       "venueId": "D",
@@ -1048,10 +1048,10 @@
       "kana": "",
       "genre": "ジャグリング＆バランス",
       "region": "日本",
-      "intro": "世界的な評価を受けるジャグラー＆サーカスアーティスト！どのテクニックも超一流。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9807"
     },
     {
       "venueId": "D",
@@ -1063,10 +1063,10 @@
       "kana": "",
       "genre": "フラメンコ",
       "region": "日本",
-      "intro": "激しく情熱的な踊りと、かき鳴らされるギター。人生の喜怒哀楽を物語る情緒的で官能的な旋律！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2413"
     },
     {
       "venueId": "D",
@@ -1078,10 +1078,10 @@
       "kana": "",
       "genre": "マイムコメディ",
       "region": "日本",
-      "intro": "元が～まるちょばの赤モヒカン！世界中にサイレントコメディ旋風を巻き起こした、ケッチによるソロパフォーマンス！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9792"
     },
     {
       "venueId": "D",
@@ -1093,10 +1093,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "あれっ！？Queenのフレディ・マーキュリー？全編Queenの楽曲で贈る、奇妙な屋外レストラン！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/3416"
     },
     {
       "venueId": "D",
@@ -1108,10 +1108,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "ポルトガル・イギリス",
-      "intro": "赤い唐辛子に翼をつけたら、蝶になっちゃった！？ダンスやフィジカルシアターもかけあわせた驚きのジャグリング。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9803"
     },
     {
       "venueId": "D",
@@ -1123,10 +1123,10 @@
       "kana": "",
       "genre": "マイム・コメディ",
       "region": "日本",
-      "intro": "大ヒットした歌謡曲にのせて、奇妙な青いジャージ姿の女がストーカーまがいに追ってくる！？冷静と情熱の間の、その隙間。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/243"
     },
     {
       "venueId": "E",
@@ -1138,10 +1138,10 @@
       "kana": "",
       "genre": "中国雑技",
       "region": "中国",
-      "intro": "バランス・軟体・アクロバット、磨き抜かれた身体が魅せる、壮絶な技の数々。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/248"
     },
     {
       "venueId": "E",
@@ -1153,10 +1153,10 @@
       "kana": "",
       "genre": "コメディサーカス",
       "region": "オーストラリア",
-      "intro": "愉快なコンビ、ケニー＆ジェニーによる、農場を舞台にしたドタバタサーカスコメディ。干し草を使ったアクロバットや巨大ニンジンのジャグリング！？",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9797"
     },
     {
       "venueId": "E",
@@ -1168,10 +1168,10 @@
       "kana": "",
       "genre": "舞踏",
       "region": "日本",
-      "intro": "大駱駝艦の舞踏手が、情熱的かつ野性的な踊りを、群れ踊り、躍動し、儀式的に踏み舞います。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/382"
     },
     {
       "venueId": "E",
@@ -1183,10 +1183,10 @@
       "kana": "",
       "genre": "唄とアコーディオン",
       "region": "日本",
-      "intro": "あの大ヒットドラマ「逃げ恥」のOP曲でもお馴染みの姉妹ユニット！サーカス風の独特な世界観。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/3465"
     },
     {
       "venueId": "E",
@@ -1198,10 +1198,10 @@
       "kana": "",
       "genre": "オペラ",
       "region": "日本",
-      "intro": "日本を代表するオペラ団体で複数の主役を務め、国外での出演経歴も豊富。クラシック一筋のオペラ歌手による圧巻の歌声。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/5426"
     },
     {
       "venueId": "E",
@@ -1213,10 +1213,10 @@
       "kana": "",
       "genre": "THE大道芸",
       "region": "日本",
-      "intro": "お客さんのテンションを自由自在に操りまくる生粋のテンションコントローラー！ミスター治外法権、ここに現る！！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/434"
     },
     {
       "venueId": "F",
@@ -1228,10 +1228,10 @@
       "kana": "",
       "genre": "スタチュー（人間銅像）",
       "region": "日本",
-      "intro": "重力を超越し電子機器を駆使した、宇宙飛行士の未来型人間銅像。ロケット燃料費を入れると、あなたの前で何かが起こる。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2318"
     },
     {
       "venueId": "F",
@@ -1243,10 +1243,10 @@
       "kana": "",
       "genre": "クロースアップマジック",
       "region": "日本",
-      "intro": "紳士的なスタイルから、時にはホラーな衣装を身にまといホラーマジックも飛び出すなど、バージョンを変えて目の前でマジックを披露！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/238"
     },
     {
       "venueId": "F",
@@ -1258,10 +1258,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "日本",
-      "intro": "ジャグリング×アイディア。いつもの日常にジャグリングを。次世代を牽引する、才気溢れるジャグリングアーティスト！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9805"
     },
     {
       "venueId": "F",
@@ -1273,10 +1273,10 @@
       "kana": "",
       "genre": "THE大道芸",
       "region": "日本",
-      "intro": "お客さんのテンションを自由自在に操りまくる生粋のテンションコントローラー！ミスター治外法権、ここに現る！！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/434"
     },
     {
       "venueId": "F",
@@ -1288,10 +1288,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "街中に巻き起こすセクシー旋風。「No Sexy No Life」をモットーに全ての人々にセクシーを。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/332"
     },
     {
       "venueId": "F",
@@ -1303,10 +1303,10 @@
       "kana": "",
       "genre": "クロースアップマジック",
       "region": "日本",
-      "intro": "紳士的なスタイルから、時にはホラーな衣装を身にまといホラーマジックも飛び出すなど、バージョンを変えて目の前でマジックを披露！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/238"
     },
     {
       "venueId": "G",
@@ -1318,10 +1318,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "日本",
-      "intro": "ジャグリング個人部門の元日本チャンピオン！特にハシゴに乗ってのジャグリングは一見の価値あり！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/285"
     },
     {
       "venueId": "G",
@@ -1333,10 +1333,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "あれっ！？Queenのフレディ・マーキュリー？全編Queenの楽曲で贈る、奇妙な屋外レストラン！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/3416"
     },
     {
       "venueId": "G",
@@ -1348,10 +1348,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "街中に巻き起こすセクシー旋風。「No Sexy No Life」をモットーに全ての人々にセクシーを。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/332"
     },
     {
       "venueId": "G",
@@ -1363,10 +1363,10 @@
       "kana": "",
       "genre": "中国雑技",
       "region": "中国",
-      "intro": "バランス・軟体・アクロバット、磨き抜かれた身体が魅せる、壮絶な技の数々。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/248"
     },
     {
       "venueId": "G",
@@ -1378,10 +1378,10 @@
       "kana": "",
       "genre": "フラメンコ",
       "region": "日本",
-      "intro": "激しく情熱的な踊りと、かき鳴らされるギター。人生の喜怒哀楽を物語る情緒的で官能的な旋律！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2413"
     },
     {
       "venueId": "G",
@@ -1393,10 +1393,10 @@
       "kana": "",
       "genre": "マイムコメディ",
       "region": "日本",
-      "intro": "元が～まるちょばの赤モヒカン！世界中にサイレントコメディ旋風を巻き起こした、ケッチによるソロパフォーマンス！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9792"
     },
     {
       "venueId": "H",
@@ -1408,10 +1408,10 @@
       "kana": "",
       "genre": "チョークアート",
       "region": "日本",
-      "intro": "イタリアから始まった地面に名画を描くパフォーマンス。フィレンツェで修業をした実力派チョークアーティスト松本かなこによる公開制作（12:00〜18:00）。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/484"
     },
     {
       "venueId": "H",
@@ -1423,10 +1423,10 @@
       "kana": "",
       "genre": "パレード",
       "region": "日本",
-      "intro": "栄通りを練り歩くウォーキングパレード。ブラックエレファンツ（JAZZ）／せせらぎ（足長ウォーキングアクト）／Chata（ウォーキングアクト）が参加。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": ""
     },
     {
       "venueId": "H",
@@ -1438,10 +1438,10 @@
       "kana": "",
       "genre": "パレード",
       "region": "日本",
-      "intro": "栄通りを練り歩くウォーキングパレード。HIBI★Chazz-K（Jazz）／Okk（ウォーキングアクト）／音姫金魚（ウォーキングアクト）が参加。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": ""
     },
     {
       "venueId": "HA1",
@@ -1453,10 +1453,10 @@
       "kana": "",
       "genre": "アクロバット",
       "region": "日本",
-      "intro": "アクロバットとコメディのナイスフュージョン、その名も「アホロバット」で笑いと共にドキドキを！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2001"
     },
     {
       "venueId": "HA1",
@@ -1468,10 +1468,10 @@
       "kana": "",
       "genre": "マイム・コメディ",
       "region": "日本",
-      "intro": "大ヒットした歌謡曲にのせて、奇妙な青いジャージ姿の女がストーカーまがいに追ってくる！？冷静と情熱の間の、その隙間。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/243"
     },
     {
       "venueId": "HA1",
@@ -1483,10 +1483,10 @@
       "kana": "",
       "genre": "マイムコメディ",
       "region": "日本",
-      "intro": "愛と笑いのパントマイム劇場。日本人特有の悲哀を見事に切り取った、劇的パントマイムの30分。ヨーロッパでも大人気の2人組！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8141"
     },
     {
       "venueId": "HA2",
@@ -1498,10 +1498,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "日本",
-      "intro": "現代サーカスの演出家としても活躍する、ジャグリングを通して物語や景色を立ち上げる表現者。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/196"
     },
     {
       "venueId": "HA2",
@@ -1513,10 +1513,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "この男、見るからに怪しすぎる。でもこの面白さ、吸い寄せられて離れられない…。観客の吸引力が変わらない、ただひとつの大道芸人！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/1374"
     },
     {
       "venueId": "HA2",
@@ -1528,10 +1528,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "「Hi2」と「こ～すけ」による二人組。スピーディーでエレガント！カッコいいのに、面白い！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9788"
     },
     {
       "venueId": "HA3",
@@ -1543,10 +1543,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "この男、見るからに怪しすぎる。でもこの面白さ、吸い寄せられて離れられない…。観客の吸引力が変わらない、ただひとつの大道芸人！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/1374"
     },
     {
       "venueId": "HA3",
@@ -1558,10 +1558,10 @@
       "kana": "",
       "genre": "コメディ",
       "region": "日本",
-      "intro": "「Hi2」と「こ～すけ」による二人組。スピーディーでエレガント！カッコいいのに、面白い！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9788"
     },
     {
       "venueId": "HA3",
@@ -1573,10 +1573,10 @@
       "kana": "",
       "genre": "アクロバット",
       "region": "日本",
-      "intro": "アクロバットとコメディのナイスフュージョン、その名も「アホロバット」で笑いと共にドキドキを！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2001"
     },
     {
       "venueId": "HA3",
@@ -1588,10 +1588,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "日本",
-      "intro": "ジャグリング個人部門の元日本チャンピオン！特にハシゴに乗ってのジャグリングは一見の価値あり！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/285"
     },
     {
       "venueId": "HA4",
@@ -1603,10 +1603,10 @@
       "kana": "",
       "genre": "マイムコメディ",
       "region": "日本",
-      "intro": "愛と笑いのパントマイム劇場。日本人特有の悲哀を見事に切り取った、劇的パントマイムの30分。ヨーロッパでも大人気の2人組！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8141"
     },
     {
       "venueId": "HA4",
@@ -1618,10 +1618,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "日本",
-      "intro": "ジャグリング×アイディア。いつもの日常にジャグリングを。次世代を牽引する、才気溢れるジャグリングアーティスト！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9805"
     },
     {
       "venueId": "HA4",
@@ -1633,10 +1633,10 @@
       "kana": "",
       "genre": "タップダンスバラエティ",
       "region": "日本",
-      "intro": "観客と一緒に作り上げるリズムタップは必見！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8144"
     },
     {
       "venueId": "I",
@@ -1648,10 +1648,10 @@
       "kana": "",
       "genre": "スタチュー（人間銅像）",
       "region": "日本",
-      "intro": "重力を超越し電子機器を駆使した、宇宙飛行士の未来型人間銅像。ロケット燃料費を入れると、あなたの前で何かが起こる。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2318"
     },
     {
       "venueId": "I",
@@ -1663,10 +1663,10 @@
       "kana": "",
       "genre": "クロースアップマジック",
       "region": "日本",
-      "intro": "紳士的なスタイルから、時にはホラーな衣装を身にまといホラーマジックも飛び出すなど、バージョンを変えて目の前でマジックを披露！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/238"
     },
     {
       "venueId": "I",
@@ -1678,10 +1678,10 @@
       "kana": "",
       "genre": "スタチュー（人間銅像）",
       "region": "日本",
-      "intro": "重力を超越し電子機器を駆使した、宇宙飛行士の未来型人間銅像。ロケット燃料費を入れると、あなたの前で何かが起こる。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/2318"
     },
     {
       "venueId": "J",
@@ -1693,10 +1693,10 @@
       "kana": "",
       "genre": "エアリアル＆ジャグリング",
       "region": "日本",
-      "intro": "ジャグリングの「森田智博」とエアリアル「長すみ絵」による、大人気の屋外サーカス！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8138"
     },
     {
       "venueId": "J",
@@ -1708,10 +1708,10 @@
       "kana": "",
       "genre": "クラウン（道化師）",
       "region": "日本",
-      "intro": "陽気なステップと気の利いた音楽。ほのぼのとしたキャラクターで魅せる、緩やかで可笑しい時間。世界に通じるジャパニーズクラウンの味！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/393"
     },
     {
       "venueId": "J",
@@ -1723,10 +1723,10 @@
       "kana": "",
       "genre": "ジャグリング＆バランス",
       "region": "日本",
-      "intro": "世界的な評価を受けるジャグラー＆サーカスアーティスト！どのテクニックも超一流。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/9807"
     },
     {
       "venueId": "J",
@@ -1738,10 +1738,10 @@
       "kana": "",
       "genre": "エアリアル＆ジャグリング",
       "region": "日本",
-      "intro": "ジャグリングの「森田智博」とエアリアル「長すみ絵」による、大人気の屋外サーカス！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8138"
     },
     {
       "venueId": "J",
@@ -1753,10 +1753,10 @@
       "kana": "",
       "genre": "マイムシアター",
       "region": "日本",
-      "intro": "人形の紳士と共に織りなす、切なく甘い大人の女の恋物語。上質なフランス映画のような世界観。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8089"
     },
     {
       "venueId": "K",
@@ -1768,10 +1768,10 @@
       "kana": "",
       "genre": "ウォーキングアクト",
       "region": "日本",
-      "intro": "次元を越えてきた河童。きゅうりの伝承は本当か、現代社会をユーモラスに観察する。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/315"
     },
     {
       "venueId": "K",
@@ -1783,10 +1783,10 @@
       "kana": "",
       "genre": "ウォーキングアクト",
       "region": "日本",
-      "intro": "威勢の良い掛け声を上げながら街を駆け抜ける、孤高のマクスレスラー。",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/8135"
     },
     {
       "venueId": "K",
@@ -1798,10 +1798,10 @@
       "kana": "",
       "genre": "ジャグリング",
       "region": "日本",
-      "intro": "ジャグリング個人部門の元日本チャンピオン！特にハシゴに乗ってのジャグリングは一見の価値あり！",
       "awardEntry": "",
       "isU25": false,
-      "order": 1
+      "order": 1,
+      "officialUrl": "https://arttown.jp/archives/285"
     }
   ]
 }

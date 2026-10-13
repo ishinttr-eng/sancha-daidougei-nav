@@ -5,6 +5,8 @@ import {
   el,
   normalize,
   perfKey,
+  teamKey,
+  isPerfFinished,
   fmtRange,
   todayStr,
   nowMin,
@@ -21,15 +23,18 @@ const $modalRoot = document.getElementById("modal-root");
 
 let activeTab = "now";
 const ui = {
-  artistsDay: "all",
+  artistsDay: null, // null=未選択（開催日ならその日、それ以外は初日）| 日付 | "team"
   artistsSearch: "",
   artistsVenue: "",
   artistsGenre: "",
   mapMode: "normal", // normal | myroute
   mapSearch: "",
-  myttMode: "list", // list | schedule
+  myttMode: null, // list | schedule | null（未指定=お気に入り会場数から自動選択。明示選択が優先）
 };
-const finishedOpen = { now: new Set(), artists: new Set(), mytt: new Set() };
+const finishedOpen = { now: new Set(), artists: new Set(), mytt: new Set(), slots: new Set(), warn: new Set() };
+const MYTT_LIST_MAX_VENUES = 8; // この会場数以下ならリスト、超えたらスケジュール表を既定にする
+const HELP_URL = "help.html";
+const LS_HELP_SEEN = "scd.helpSeen.v1";
 const venueCollapseOpen = new Set();
 
 const mapState = {
@@ -76,12 +81,14 @@ function isNowPlaying(p, date, min) {
   return p.date === date && p.startMin <= min && min < p.endMin;
 }
 function isSoon(p, date, min) {
-  return p.date === date && p.startMin > min && p.startMin <= min + 30;
+  // 演目が30分に満たない場合は「まもなく」が意味を成さないので出さない
+  return p.endMin - p.startMin >= 30 && p.date === date && p.startMin > min && p.startMin <= min + 30;
 }
 
 // ---------- generic render ----------
 function render() {
   applyTabVisibility();
+  document.getElementById("app").classList.toggle("screen-map", activeTab === "map");
   $main.innerHTML = "";
   const { date, min } = curDateMin();
   const over = isFestivalOver(store.state.performances, date, min);
@@ -120,11 +127,11 @@ document.querySelectorAll(".tab-btn").forEach((btn) => {
 
 // ---------- weather badge ----------
 function weatherBadgeFor(dateStr, startMin) {
-  if (!weatherData) return null;
+  // 予報が取れない間もバッジは消さず「-」で残す（壊れているのか時期が早いだけなのか区別するため）
   const hour = Math.floor(startMin / 60);
   const key = `${dateStr}T${String(hour).padStart(2, "0")}:00`;
-  const w = weatherData[key];
-  if (!w) return null;
+  const w = weatherData?.[key];
+  if (!w) return el("span", { class: "badge weather" }, "- -° -%");
   return el("span", { class: "badge weather" }, `${store.weatherIcon(w.code)} ${Math.round(w.temp)}° ${w.pop}%`);
 }
 
@@ -162,22 +169,77 @@ function perfCard(p, { date, min, showVenue = true, showDate = false } = {}) {
   if (wb) badges.appendChild(wb);
   if (badges.children.length) body.appendChild(badges);
 
-  const favBtn = el(
+  const favBtn = favButton(p);
+  card.append(timeCol, body, favBtn);
+  applyFavState(favBtn, p); // カードに繋がってから反映する（作成時はclosestがnullになるため）
+  return card;
+}
+
+// ---------- お気に入りの見分けと時間の重なり ----------
+// ☆の見た目: 登録済み=★ / 同じチームの別枠が登録済み=☆(アクセント色) / どちらでもない=☆(グレー)
+// カード: 登録済み=塗り+帯 / 登録済みの別の枠と時間が重なる=薄い青の塗り+バッジ（出演者タブのみ）
+function favButton(p) {
+  return el(
     "button",
     {
-      class: `fav-btn${store.isFavorite(p) ? " active" : ""}`,
+      class: "fav-btn",
+      "data-pid": perfKey(p), // idではなくperfKey。同じidが複数枠を持つため
       "aria-label": "お気に入り",
       onclick: (e) => {
         e.stopPropagation();
-        store.toggleFavorite(p);
-        render();
+        onToggleFav(p);
       },
     },
-    store.isFavorite(p) ? "★" : "☆"
+    "☆"
   );
+}
 
-  card.append(timeCol, body, favBtn);
-  return card;
+function hasOtherSlotFavorite(p) {
+  return store.teamSlots(p).some((q) => q !== p && store.isFavorite(q));
+}
+
+// 同じ日で時間が重なり、登録済みの別の枠（端が接するだけは重ならない）
+function conflictingFavorite(p) {
+  if (store.state.favorites.size === 0 || store.isFavorite(p)) return null;
+  return (
+    store.state.performances.find(
+      (x) => x.date === p.date && x.startMin < p.endMin && p.startMin < x.endMin && store.isFavorite(x)
+    ) || null
+  );
+}
+
+function applyFavState(btn, p) {
+  const fav = store.isFavorite(p);
+  const slotRow = btn.closest(".slot-row");
+  btn.textContent = fav ? "★" : "☆";
+  btn.classList.toggle("active", fav);
+  btn.classList.toggle("other", !fav && !slotRow && hasOtherSlotFavorite(p));
+  slotRow?.classList.toggle("faved", fav);
+  const card = btn.closest(".perf-card");
+  if (!card) return;
+  card.classList.toggle("faved", fav && activeTab !== "mytt");
+  const clash = activeTab === "artists" ? conflictingFavorite(p) : null;
+  card.classList.toggle("clash", !!clash);
+  card.querySelector(".clash-badge")?.remove();
+  if (clash) {
+    const v = store.venueById(clash.venueId);
+    card.querySelector(".body")?.appendChild(el("div", { class: "clash-badge" }, `${v ? v.stageNo + ". " : ""}${clash.name}`));
+  }
+}
+
+// 画面全体を再描画するとスクロール位置や入力欄のフォーカスが失われるので、☆だけ全部更新する
+function refreshFavButtons() {
+  document.querySelectorAll(".fav-btn[data-pid]").forEach((b) => {
+    const p = store.perfByKey(b.dataset.pid);
+    if (p) applyFavState(b, p);
+  });
+}
+
+function onToggleFav(p) {
+  store.toggleFavorite(p);
+  // マイタイムテーブルは一覧の中身そのものが変わるので再描画。それ以外は☆の更新だけで済ます
+  if (activeTab === "mytt") render();
+  else refreshFavButtons();
 }
 
 function estimateWalk(geo, venue) {
@@ -294,15 +356,21 @@ function overPanel() {
 }
 
 // ---------- Tab: 出演者 ----------
+// 同じ出演者が複数回出るフェスなので、日付タブに「チーム」軸を足し「すべて」は置かない
+function artistsDayValue(date) {
+  return ui.artistsDay || (DAYS.includes(date) ? date : DAYS[0]);
+}
+
 function renderArtists(root, date, min) {
   root.appendChild(el("h1", { class: "screen-title" }, "📅 出演者"));
 
+  const curDay = artistsDayValue(date);
   const dayTabs = el("div", { class: "day-tabs" });
   const mkDayTab = (val, label) =>
     el(
       "button",
       {
-        class: `day-tab${ui.artistsDay === val ? " active" : ""}`,
+        class: `day-tab${curDay === val ? " active" : ""}`,
         onclick: () => {
           ui.artistsDay = val;
           render();
@@ -310,7 +378,7 @@ function renderArtists(root, date, min) {
       },
       label
     );
-  dayTabs.append(mkDayTab("all", "すべて"), ...DAYS.map((d) => mkDayTab(d, DAY_LABELS[d])));
+  dayTabs.append(...DAYS.map((d) => mkDayTab(d, DAY_LABELS[d])), mkDayTab("team", "チーム"));
   root.appendChild(dayTabs);
 
   const listContainer = el("div", {});
@@ -325,7 +393,7 @@ function renderArtists(root, date, min) {
       // ここでfull render()すると<input>ごと作り直されてしまい、入力中にフォーカスが
       // 外れる（1文字打つたびに再フォーカスが必要になる）ため、リスト部分だけ更新する
       ui.artistsSearch = e.target.value;
-      renderArtistsList(listContainer, date, min);
+      renderArtistsBody(listContainer, date, min);
     }, 200),
   });
   const venueSelect = el("select", {
@@ -356,23 +424,37 @@ function renderArtists(root, date, min) {
   root.appendChild(filterRow);
 
   root.appendChild(listContainer);
-  renderArtistsList(listContainer, date, min);
+  renderArtistsBody(listContainer, date, min);
 }
 
-function renderArtistsList(container, date, min) {
-  container.innerHTML = "";
+function renderArtistsBody(container, date, min) {
+  if (artistsDayValue(date) === "team") renderArtistsByTeam(container, date, min);
+  else renderArtistsList(container, date, min);
+}
 
+// 会場・ジャンル・検索の絞り込み（日付の絞り込みは呼び出し側）
+function filterArtistPerfs(base) {
   const q = normalize(ui.artistsSearch);
-  let list = store.state.performances.filter((p) => {
-    if (ui.artistsDay !== "all" && p.date !== ui.artistsDay) return false;
+  return base.filter((p) => {
     if (ui.artistsVenue && p.venueId !== ui.artistsVenue) return false;
     if (ui.artistsGenre && p.genre !== ui.artistsGenre) return false;
     if (q && !normalize(p.name).includes(q) && !normalize(p.kana).includes(q) && !normalize(p.awardEntry).includes(q)) return false;
     return true;
   });
+}
+
+function emptyArtists() {
+  return el("div", { class: "empty-state" }, [el("span", { class: "emoji" }, "🔍"), el("div", {}, "該当する出演者が見つかりません")]);
+}
+
+function renderArtistsList(container, date, min) {
+  container.innerHTML = "";
+
+  const day = artistsDayValue(date);
+  const list = filterArtistPerfs(store.state.performances.filter((p) => p.date === day));
 
   if (!list.length) {
-    container.appendChild(el("div", { class: "empty-state" }, [el("span", { class: "emoji" }, "🔍"), el("div", {}, "該当する出演者が見つかりません")]));
+    container.appendChild(emptyArtists());
     return;
   }
 
@@ -386,27 +468,146 @@ function renderArtistsList(container, date, min) {
   const activeVenues = [];
   const finishedVenues = [];
   venuesOrdered.forEach((v) => {
-    const finished = ui.artistsDay !== "all" && isVenueFinished(store.state.performances, v.id, ui.artistsDay, date, min);
+    const finished = isVenueFinished(store.state.performances, v.id, day, date, min);
     (finished ? finishedVenues : activeVenues).push(v);
   });
 
-  const renderVenueGroup = (v) => {
+  const renderVenueGroup = (v, foldFinishedSlots) => {
     const group = el("div", { class: "venue-group" });
     group.appendChild(el("div", { class: "venue-group-head" }, [el("span", { class: "stageno" }, `#${v.stageNo}`), v.name]));
-    byVenue
-      .get(v.id)
-      .sort((a, b) => (a.date === b.date ? a.startMin - b.startMin : a.date.localeCompare(b.date)))
-      .forEach((p) => group.appendChild(perfCard(p, { date, min, showVenue: false, showDate: ui.artistsDay === "all" })));
+    const slots = byVenue.get(v.id).sort((a, b) => a.startMin - b.startMin);
+    const done = foldFinishedSlots ? slots.filter((p) => isPerfFinished(p, date, min)) : [];
+    slots
+      .filter((p) => !done.includes(p))
+      .forEach((p) => group.appendChild(perfCard(p, { date, min, showVenue: false })));
+    // 会場の一部だけ終わっている時は、終わった枠だけをその会場内で畳む（これからの枠を上に残す）
+    if (done.length) {
+      const wrap = el("div", {});
+      done.forEach((p) => wrap.appendChild(perfCard(p, { date, min, showVenue: false })));
+      group.appendChild(finishedDetails({ screen: "slots", id: `${v.id}-${day}` }, `🏁 終了済み（${done.length}）`, wrap));
+    }
     return group;
   };
 
-  activeVenues.forEach((v) => container.appendChild(renderVenueGroup(v)));
+  activeVenues.forEach((v) => container.appendChild(renderVenueGroup(v, true)));
 
   if (finishedVenues.length) {
     const wrap = el("div", {});
-    finishedVenues.forEach((v) => wrap.appendChild(renderVenueGroup(v)));
-    container.appendChild(finishedDetails({ screen: "artists", id: "fin" }, `🏁 終了したステージ（${finishedVenues.length}）`, wrap));
+    finishedVenues.forEach((v) => wrap.appendChild(renderVenueGroup(v, false)));
+    container.appendChild(finishedDetails({ screen: "artists", id: `fin-${day}` }, `🏁 終了したステージ（${finishedVenues.length}）`, wrap));
   }
+}
+
+// チームごとの表示。詳細モーダルと同じ部品（タグ・リンク・枠リスト）を使う
+function renderArtistsByTeam(container, date, min) {
+  container.innerHTML = "";
+  const slots = filterArtistPerfs(store.state.performances);
+  const teams = new Map();
+  slots.forEach((p) => {
+    const k = teamKey(p);
+    if (!teams.has(k)) teams.set(k, []);
+    teams.get(k).push(p);
+  });
+  if (!teams.size) {
+    container.appendChild(emptyArtists());
+    return;
+  }
+  [...teams.values()]
+    .sort((a, b) => teamName(a[0]).localeCompare(teamName(b[0]), "ja"))
+    .forEach((list) => {
+      const p = list[0];
+      const card = el("div", { class: "team-card" });
+      card.appendChild(el("div", { class: "team-name" }, teamName(p)));
+      const tags = teamTags(p);
+      if (tags) card.appendChild(tags);
+      const links = teamLinks(p);
+      if (links) card.appendChild(links);
+      card.appendChild(teamSlotsSection(list, { date, min, onOpen: openDetailModal }));
+      container.appendChild(card);
+    });
+}
+
+// 「栄通りパレード」のようにチーム名が枠名と異なるケースを除き、枠名がそのままチーム名
+function teamName(p) {
+  return p.name;
+}
+
+function teamTags(p) {
+  if (!p.genre && !p.region) return null;
+  const tags = el("div", { class: "badges" });
+  if (p.genre) tags.appendChild(el("span", { class: "badge" }, p.genre));
+  if (p.region) tags.appendChild(el("span", { class: "badge" }, p.region));
+  if (p.awardEntry) tags.appendChild(el("span", { class: "badge" }, p.awardEntry));
+  return tags;
+}
+
+function teamLinks(p) {
+  if (!p.officialUrl) return null;
+  return el("div", { class: "btn-row", style: "margin:8px 0" }, [
+    el("button", { class: "btn small", onclick: () => openOfficialViewer(p) }, "📄 公式サイトのチーム紹介"),
+  ]);
+}
+
+// 「このチームの出演枠（N）」。枠が2つ以上あるチームにだけ出す。日付ごとの箱＋枠ごとの☆、終わった枠は折りたたむ
+function teamSlotsSection(slots, { date, min, currentKey = null, onOpen }) {
+  if (slots.length < 2) {
+    return el("div", {});
+  }
+  const section = el("div", { class: "team-slots" });
+  section.appendChild(el("h4", {}, `このチームの出演枠（${slots.length}）`));
+  const mkBoxes = (list) => {
+    const wrap = el("div", {});
+    const byDate = new Map();
+    list.forEach((q) => {
+      if (!byDate.has(q.date)) byDate.set(q.date, []);
+      byDate.get(q.date).push(q);
+    });
+    byDate.forEach((qs, d) => {
+      const box = el("div", { class: "slot-box" }, [el("div", { class: "slot-date" }, DAY_LABELS[d] || d)]);
+      qs.forEach((q) => {
+        const v = store.venueById(q.venueId);
+        const btn = favButton(q);
+        const row = el(
+          "div",
+          { class: `slot-row${perfKey(q) === currentKey ? " current" : ""}`, onclick: () => onOpen(q) },
+          [
+            el("span", { class: "slot-time" }, fmtRange(q.start, q.end)),
+            el("span", { class: "slot-venue" }, v ? `${v.stageNo}. ${v.name}` : ""),
+            btn,
+          ]
+        );
+        applyFavState(btn, q);
+        box.appendChild(row);
+      });
+      wrap.appendChild(box);
+    });
+    return wrap;
+  };
+  const upcoming = slots.filter((q) => !isPerfFinished(q, date, min));
+  const done = slots.filter((q) => isPerfFinished(q, date, min));
+  section.appendChild(mkBoxes(upcoming));
+  if (done.length) {
+    section.appendChild(finishedDetails({ screen: "slots", id: `team-${teamKey(slots[0])}` }, `🏁 終了済み（${done.length}）`, mkBoxes(done)));
+  }
+  return section;
+}
+
+// 公式ページをそのまま全画面で見せるビューア。出典と「公式サイトで開く」を常に出し、加工・切り取りはしない
+function openOfficialViewer(p) {
+  const viewer = el("div", { class: "official-viewer" });
+  viewer.appendChild(
+    el("div", { class: "ov-bar" }, [
+      el("div", { class: "ov-title" }, [
+        el("div", { class: "ov-name" }, teamName(p)),
+        el("div", { class: "ov-src" }, "出典: 三茶de大道芸 公式サイト（© せたがや文化財団）"),
+      ]),
+      el("a", { class: "btn small", href: p.officialUrl, target: "_blank", rel: "noopener" }, "公式サイトで開く ↗"),
+      el("button", { class: "modal-close", style: "position:static", onclick: () => viewer.remove(), "aria-label": "閉じる" }, "✕"),
+    ])
+  );
+  viewer.appendChild(el("iframe", { class: "ov-frame", src: p.officialUrl, referrerpolicy: "no-referrer", title: teamName(p) }));
+  viewer.appendChild(el("div", { class: "ov-note" }, "表示されない場合は、オンライン接続を確認するか「公式サイトで開く」からご覧ください。"));
+  $modalRoot.appendChild(viewer);
 }
 
 // ---------- detail modal ----------
@@ -415,6 +616,7 @@ function openDetailModal(p) {
   const backdrop = el("div", { class: "modal-backdrop", onclick: (e) => { if (e.target === backdrop) close(); } });
   const sheet = el("div", { class: "modal-sheet" });
   const close = () => backdrop.remove();
+  const { date: curDate, min: curMin } = curDateMin();
 
   sheet.appendChild(el("button", { class: "modal-close", onclick: close, "aria-label": "閉じる" }, "✕"));
   sheet.appendChild(el("div", { class: "modal-title" }, p.name));
@@ -430,37 +632,43 @@ function openDetailModal(p) {
         : null,
     ])
   );
-  if (p.genre || p.region) {
-    const tags = el("div", { class: "badges" });
-    if (p.genre) tags.appendChild(el("span", { class: "badge" }, p.genre));
-    if (p.region) tags.appendChild(el("span", { class: "badge" }, p.region));
-    if (p.awardEntry) tags.appendChild(el("span", { class: "badge" }, p.awardEntry));
-    sheet.appendChild(tags);
-  }
-  if (p.intro) {
-    const s = el("div", { class: "modal-section" });
-    s.appendChild(el("h4", {}, "紹介"));
-    s.appendChild(el("p", {}, p.intro));
-    sheet.appendChild(s);
-  }
+  const tags = teamTags(p);
+  if (tags) sheet.appendChild(tags);
+  const links = teamLinks(p);
+  if (links) sheet.appendChild(links);
 
   const favSection = el("div", { class: "modal-section" });
-  favSection.appendChild(
-    el(
-      "button",
-      {
-        class: `btn ${store.isFavorite(p) ? "primary" : ""} block`,
-        onclick: () => {
-          store.toggleFavorite(p);
-          render();
-          close();
-          openDetailModal(p);
-        },
+  const favLabel = () => (store.isFavorite(p) ? "★ お気に入り登録済み" : "☆ お気に入りに追加");
+  const favBtn = el(
+    "button",
+    {
+      class: `btn ${store.isFavorite(p) ? "primary" : ""} block`,
+      onclick: () => {
+        onToggleFav(p);
+        favBtn.textContent = favLabel();
+        favBtn.classList.toggle("primary", store.isFavorite(p));
       },
-      store.isFavorite(p) ? "★ お気に入り登録済み" : "☆ お気に入りに追加"
-    )
+    },
+    favLabel()
   );
+  favSection.appendChild(favBtn);
   sheet.appendChild(favSection);
+
+  const slots = store.teamSlots(p);
+  if (slots.length > 1) {
+    sheet.appendChild(
+      teamSlotsSection(slots, {
+        date: curDate,
+        min: curMin,
+        currentKey: perfKey(p),
+        onOpen: (q) => {
+          if (q === p) return;
+          close();
+          openDetailModal(q);
+        },
+      })
+    );
+  }
 
   if (venue) {
     const mapBtn = el(
@@ -650,34 +858,17 @@ function renderMap(root, date, min) {
 
   ensureMapResizeListener();
   requestAnimationFrame(() => {
-    fitMapHeight(mapDiv);
     initOrUpdateMap(mapDiv, date, min);
   });
 }
 
-// マップの高さはCSSの固定計算値(calc(100vh - Npx))だと、マイルートの区間パネルのように
-// ツールバーとマップの間に高さが可変なバナーが挟まるケースを想定できず、
-// マップの下端が固定タブバーの下に潜り込んだり、逆に検索エリアが画面外に押し出されたりする。
-// そのため実際にDOMへ配置された後の残り高さを毎回測って明示的にセットする。
-function fitMapHeight(mapDiv) {
-  const top = mapDiv.getBoundingClientRect().top;
-  const tabbar = document.getElementById("tabbar");
-  const tabbarH = tabbar ? tabbar.getBoundingClientRect().height : 0;
-  const available = window.innerHeight - top - tabbarH - 12;
-  // 極端に縦が狭い画面（横向き等）では280pxだと逆にタブバーへ食い込むため、
-  // 最低保証は控えめにして「タブバーに被らない」を優先する
-  mapDiv.style.height = `${Math.max(200, Math.round(available))}px`;
-  mapState.instance?.invalidateSize();
-}
-
+// 地図の高さはJSで測らず、CSS（#app.screen-map のフレックスレイアウト）に任せる。
+// リサイズ・端末回転のときだけLeafletに寸法の再計算を促す
 let mapResizeBound = false;
 function ensureMapResizeListener() {
   if (mapResizeBound) return;
   mapResizeBound = true;
-  window.addEventListener("resize", () => {
-    const mapDiv = document.getElementById("map-view");
-    if (mapDiv) fitMapHeight(mapDiv);
-  });
+  window.addEventListener("resize", () => mapState.instance?.invalidateSize());
 }
 
 // 会場詳細モーダルから「地図で見る」で指定された、現在地または特定会場→会場の単一区間ルート
@@ -711,7 +902,7 @@ function drawSingleRoute(layer, spec) {
   L.circleMarker([info.from.lat, info.from.lng], { radius: 8, color: "#fff", weight: 3, fillColor: "#ff2f92", fillOpacity: 1 }).addTo(layer);
   const mid = info.latlngs[Math.floor(info.latlngs.length / 2)];
   L.marker(mid, { icon: walkTimeIcon(info.walkMin, "#ff2f92"), interactive: false, zIndexOffset: 1200 }).addTo(layer);
-  mapState.instance.fitBounds(L.latLngBounds(info.latlngs), { padding: [56, 56] });
+  mapState.instance.fitBounds(L.latLngBounds(info.latlngs), { padding: [56, 56], animate: false });
 }
 
 function renderRouteBanner(root) {
@@ -787,7 +978,7 @@ function focusMapOnVenue(venue) {
   mapState.center = L.latLng(venue.lat, venue.lng);
   mapState.zoom = 18;
   if (mapState.instance) {
-    mapState.instance.setView([venue.lat, venue.lng], 18, { animate: true });
+    mapState.instance.setView([venue.lat, venue.lng], 18, { animate: false });
   }
 }
 
@@ -857,13 +1048,13 @@ function initOrUpdateMap(mapDiv, date, min) {
     const vs = store.state.venues;
     const map = L.map(mapDiv, { inertiaMaxSpeed: 1500 });
     if (mapState.center) {
-      map.setView(mapState.center, mapState.zoom || 16);
+      map.setView(mapState.center, mapState.zoom || 16, { animate: false });
     } else if (vs.length) {
       // 初期表示は全会場が収まるようfitBoundsで合わせる（会場によって駅から離れた場所もあるため、
       // 固定ズームの重心表示だと見切れたり余白が偏ったりする）
-      map.fitBounds(L.latLngBounds(vs.map((v) => [v.lat, v.lng])), { padding: [32, 32] });
+      map.fitBounds(L.latLngBounds(vs.map((v) => [v.lat, v.lng])), { padding: [32, 32], animate: false });
     } else {
-      map.setView([35.6437, 139.671], 16);
+      map.setView([35.6437, 139.671], 16, { animate: false });
     }
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
@@ -887,7 +1078,7 @@ function initOrUpdateMap(mapDiv, date, min) {
         try {
           const geo = await locateOnce();
           b.textContent = "📍";
-          map.setView([geo.lat, geo.lng], 16);
+          map.setView([geo.lat, geo.lng], 16, { animate: false });
         } catch {
           b.textContent = "❌";
           setTimeout(() => { b.textContent = "📍"; }, 1500);
@@ -902,7 +1093,7 @@ function initOrUpdateMap(mapDiv, date, min) {
     // 別のdivへ再アタッチ（タブ切替でDOMが作り直されるため）
     mapDiv.appendChild(mapState.instance.getContainer());
     mapState.instance.invalidateSize();
-    if (mapState.center) mapState.instance.setView(mapState.center, mapState.zoom);
+    if (mapState.center) mapState.instance.setView(mapState.center, mapState.zoom, { animate: false });
   }
   drawMapLayer(date, min);
 }
@@ -1001,12 +1192,21 @@ function computeMyRouteSegments(date, min) {
   const prevList = favs.filter((p) => p.startMin <= min);
   const prev = prevList.length ? prevList[prevList.length - 1] : null;
 
+  // 時系列で同じ会場が続く間は移動が発生しないので、1区間（最初の開始〜最後の終了）に集約する。
+  // 別会場を挟んで戻る場合は集約せず別区間にする
   const segments = [];
   let fromId = prev ? prev.venueId : null; // null = 最初の区間のみ「現在地から」
   upcoming.forEach((p) => {
-    segments.push({ fromId, toId: p.venueId, toPerf: p });
+    if (fromId !== p.venueId) {
+      segments.push({ fromId, toId: p.venueId, toPerf: p, lastPerf: p, count: 1 });
+    } else if (segments.length && segments[segments.length - 1].toId === p.venueId) {
+      const last = segments[segments.length - 1];
+      last.lastPerf = p;
+      last.count++;
+    }
     fromId = p.venueId;
   });
+  if (!segments.length) return { message: "残りのお気に入りはすべて同じ会場のため、移動はありません" };
   return { segments };
 }
 
@@ -1068,8 +1268,8 @@ function drawMyRoute(layer, date, min) {
     let timeMarker = null;
     if (d.coords) {
       const dash = d.hasRoute ? null : "7 9";
-      halo = L.polyline(d.coords, { color: "#ffffff", weight: 7, opacity: 0.85, dashArray: dash }).addTo(layer);
-      line = L.polyline(d.coords, { color, weight: 4, opacity: 0.85, dashArray: dash }).addTo(layer);
+      halo = L.polyline(d.coords, { color: "#ffffff", weight: 5, opacity: 0.15, dashArray: dash }).addTo(layer);
+      line = L.polyline(d.coords, { color, weight: 3, opacity: 0.3, dashArray: dash }).addTo(layer);
       startMarker = L.marker(d.coords[0], { icon: endpointIcon("start", color), interactive: false, zIndexOffset: 1000 }).addTo(layer);
       endMarker = L.marker(d.coords[d.coords.length - 1], { icon: endpointIcon("end", color), interactive: false, zIndexOffset: 1000 }).addTo(layer);
       const mid = d.coords[Math.floor(d.coords.length / 2)];
@@ -1078,22 +1278,22 @@ function drawMyRoute(layer, date, min) {
     return { ...d, halo, line, startMarker, endMarker, timeMarker };
   });
 
-  // フォーカス中の区間だけ太く・不透明に、徒歩時間ラベルも付ける。他は細く・薄くして「今どの線か」を一目で分かるようにする
+  // フォーカス中の区間だけ太く・不透明に、徒歩時間ラベルも付ける。他は細く薄く（太さ3・透明度0.3）して「今どの線か」を一目で分かるようにする
   const applyHighlight = (idx) => {
     segInfo.forEach((s, i) => {
       if (!s.line) return;
       const focused = i === idx;
-      s.halo.setStyle({ weight: focused ? 9 : 7, opacity: focused ? 0.95 : 0.85 });
-      s.line.setStyle({ weight: focused ? 5 : 4, opacity: focused ? 1 : 0.85 });
-      s.startMarker.setOpacity(focused ? 1 : 0.6);
-      s.endMarker.setOpacity(focused ? 1 : 0.6);
+      s.halo.setStyle({ weight: focused ? 8 : 5, opacity: focused ? 0.95 : 0.15 });
+      s.line.setStyle({ weight: focused ? 5 : 3, opacity: focused ? 1 : 0.3 });
+      s.startMarker.setOpacity(focused ? 1 : 0.3);
+      s.endMarker.setOpacity(focused ? 1 : 0.3);
       s.timeMarker?.setOpacity(focused ? 1 : 0);
       if (focused) s.line.bringToFront();
     });
   };
   const focusMap = (idx) => {
     const s = segInfo[idx];
-    if (s && s.line) mapState.instance.fitBounds(s.line.getBounds(), { padding: [56, 90] });
+    if (s && s.line) mapState.instance.fitBounds(s.line.getBounds(), { padding: [56, 90], animate: false });
   };
 
   mapState.myRouteSegInfo = segInfo;
@@ -1136,7 +1336,7 @@ function renderMyRouteBanner(root, date, min) {
     return el("div", { class: "myroute-card" }, [
       el("div", { class: "myroute-main" }, [
         el("div", { class: "myroute-route" }, `${d.fromLabel} → ${d.to.stageNo}. ${d.to.name}`),
-        el("div", { class: "myroute-sub" }, `${d.legText}　次: ${d.seg.toPerf.start} ${d.seg.toPerf.name}`),
+        el("div", { class: "myroute-sub" }, `${d.legText}　次: ${d.seg.toPerf.start}〜${d.seg.lastPerf.end} ${d.seg.toPerf.name}${d.seg.count > 1 ? ` ほか${d.seg.count - 1}件` : ""}`),
       ]),
       gUrl ? el("a", { class: "myroute-g", href: gUrl, target: "_blank", rel: "noopener", title: "Googleで開く" }, "↗") : null,
     ]);
@@ -1158,7 +1358,11 @@ function renderMyRouteBanner(root, date, min) {
     }
     // 地図の視点合わせはスクロールが落ち着いてから（スワイプ中に何度も動くと酔うため）
     clearTimeout(settleTimer);
-    settleTimer = setTimeout(() => mapState.myRouteFocusMap?.(myRouteIndex), 150);
+    settleTimer = setTimeout(() => {
+      // 画面が作り直されていたら、古いカードのタイマーで新しい画面の地図を動かさない
+      if (!carousel.isConnected) return;
+      mapState.myRouteFocusMap?.(myRouteIndex);
+    }, 150);
   });
 
   const banner = el("div", { class: "route-banner myroute-banner" }, [
@@ -1219,19 +1423,24 @@ function renderMyTT(root, date, min, over) {
   root.appendChild(dayTabs);
   const activeDay = ui.myttDay || curDay;
 
+  const dayFavs0 = favs.filter((p) => p.date === activeDay);
+  // 表示モードは明示的にタップされるまで固定せず、その日のお気に入りが散らばる会場数で自動選択する
+  const venueCount = new Set(dayFavs0.map((p) => p.venueId)).size;
+  const effMode = ui.myttMode ?? (venueCount <= MYTT_LIST_MAX_VENUES ? "list" : "schedule");
+
   if (!over) {
     const modeRow = el("div", { class: "map-toolbar" });
     modeRow.appendChild(
       el(
         "button",
-        { class: `toggle-btn${ui.myttMode === "list" ? " active" : ""}`, onclick: () => { ui.myttMode = "list"; render(); } },
+        { class: `toggle-btn${effMode === "list" ? " active" : ""}`, onclick: () => { ui.myttMode = "list"; render(); } },
         "リスト"
       )
     );
     modeRow.appendChild(
       el(
         "button",
-        { class: `toggle-btn${ui.myttMode === "schedule" ? " active" : ""}`, onclick: () => { ui.myttMode = "schedule"; render(); } },
+        { class: `toggle-btn${effMode === "schedule" ? " active" : ""}`, onclick: () => { ui.myttMode = "schedule"; render(); } },
         "スケジュール表"
       )
     );
@@ -1262,32 +1471,38 @@ function renderMyTT(root, date, min, over) {
     );
   }
 
+  // 警告は常時並べず折りたたみに隠し、閉じている間は件数だけ見せる（0件なら折りたたみ自体を出さない）
   const warnings = computeWarnings(dayFavs);
-  warnings.forEach((w) => {
-    const banner = el(
-      "div",
-      {
-        class: "warn-banner",
-        onclick: () => {
-          activeTab = "map";
-          ui.mapMode = "myroute";
-          render();
-        },
-      },
-      `⚠️ ${w}`
-    );
-    root.appendChild(banner);
-  });
+  if (warnings.length) {
+    const wrap = el("div", {});
+    warnings.forEach((w) => {
+      wrap.appendChild(
+        el(
+          "div",
+          {
+            class: "warn-banner",
+            onclick: () => {
+              activeTab = "map";
+              ui.mapMode = "myroute";
+              render();
+            },
+          },
+          `⚠️ ${w}`
+        )
+      );
+    });
+    root.appendChild(finishedDetails({ screen: "warn", id: activeDay }, `⚠️ 時間・移動の警告（${warnings.length}件）`, wrap));
+  }
 
-  if (ui.myttMode === "schedule" && !over) {
+  if (effMode === "schedule" && !over) {
     root.appendChild(renderScheduleGrid(dayFavs, date, min));
   } else {
-    const finished = dayFavs.filter((p) => p.date < date || (p.date === date && p.endMin <= min));
+    const finished = dayFavs.filter((p) => isPerfFinished(p, date, min));
     const active = dayFavs.filter((p) => !finished.includes(p));
-    appendPerfCardsWithConnectors(root, active, date, min);
+    appendRunBoxes(root, active, date, min);
     if (finished.length) {
       const wrap = el("div", {});
-      appendPerfCardsWithConnectors(wrap, finished, date, min);
+      appendRunBoxes(wrap, finished, date, min);
       root.appendChild(finishedDetails({ screen: "mytt", id: activeDay }, `🏁 終了したステージ（${finished.length}）`, wrap));
     }
   }
@@ -1303,21 +1518,28 @@ function renderMyTT(root, date, min, over) {
   }
 }
 
-// お気に入りの演目カードを、連続する2件の間にそのステージ間の移動時間を挟みながら描画する
-function appendPerfCardsWithConnectors(container, list, date, min) {
-  list.forEach((p, i) => {
-    container.appendChild(perfCard(p, { date, min }));
-    if (i < list.length - 1) {
-      const connector = travelConnector(list[i], list[i + 1]);
+// 「移動が不要な連続区間」（時系列でvenueIdが連続する範囲）ごとに、会場名の見出し付きの箱にまとめる。
+// 1件だけの区間も同じ箱・見出しで描画し、別会場へ移る箇所にだけ徒歩時間の区切りを置く
+function appendRunBoxes(container, list, date, min) {
+  let i = 0;
+  while (i < list.length) {
+    let j = i;
+    while (j + 1 < list.length && list[j + 1].venueId === list[i].venueId) j++;
+    const v = store.venueById(list[i].venueId);
+    const box = el("div", { class: "run-box" }, [
+      el("div", { class: "run-head" }, [el("span", { class: "stageno" }, `#${v ? v.stageNo : ""}`), v ? v.name : ""]),
+    ]);
+    for (let k = i; k <= j; k++) box.appendChild(perfCard(list[k], { date, min, showVenue: false }));
+    container.appendChild(box);
+    if (j < list.length - 1) {
+      const connector = travelConnector(list[j], list[j + 1]);
       if (connector) container.appendChild(connector);
     }
-  });
+    i = j + 1;
+  }
 }
 
 function travelConnector(a, b) {
-  if (a.venueId === b.venueId) {
-    return el("div", { class: "mytt-connector" }, "同じ会場");
-  }
   const venueA = store.venueById(a.venueId);
   const venueB = store.venueById(b.venueId);
   if (!venueA || !venueB) return null;
@@ -1460,19 +1682,6 @@ function openChangelogModal() {
     sheet.appendChild(el("p", { style: "color:var(--muted)" }, "出演者情報の変更履歴はまだありません。"));
   }
 
-  const app = store.state.appChangelog?.entries || [];
-  if (app.length) {
-    sheet.appendChild(el("h4", { style: "color:var(--muted);font-size:.78rem;text-transform:uppercase;margin:18px 0 6px" }, "アプリの更新履歴"));
-    let lastDate = null;
-    app.forEach((e) => {
-      if (e.date !== lastDate) {
-        sheet.appendChild(el("div", { class: "changelog-date" }, e.date));
-        lastDate = e.date;
-      }
-      sheet.appendChild(el("div", { class: "changelog-item" }, [el("span", { class: "tag" }, e.version), el("span", {}, e.text)]));
-    });
-  }
-
   backdrop.appendChild(sheet);
   $modalRoot.appendChild(backdrop);
 
@@ -1482,7 +1691,66 @@ function openChangelogModal() {
 }
 
 // ---------- 設定 ----------
-document.getElementById("btn-settings").addEventListener("click", openSettingsModal);
+// ---------- ☰メニュー（設定／使い方） ----------
+const $menuBtn = document.getElementById("btn-menu");
+const $menuPop = document.getElementById("menu-pop");
+function setMenuOpen(open) {
+  $menuPop.hidden = !open;
+  $menuBtn.setAttribute("aria-expanded", String(open));
+}
+$menuBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  setMenuOpen($menuPop.hidden);
+});
+document.addEventListener("click", (e) => {
+  if (!$menuPop.hidden && !$menuPop.contains(e.target)) setMenuOpen(false);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !$menuPop.hidden) setMenuOpen(false);
+});
+document.getElementById("menu-settings").addEventListener("click", () => {
+  setMenuOpen(false);
+  openSettingsModal();
+});
+document.getElementById("menu-help").addEventListener("click", () => setMenuOpen(false));
+
+// ---------- 初回起動時の使い方案内 ----------
+function isHelpSeen() {
+  try {
+    return localStorage.getItem(LS_HELP_SEEN) === "true";
+  } catch {
+    return false;
+  }
+}
+// 書き込み→読み戻しで、保存できた時だけtrue（保存できない環境では毎回「初回」になってしまうため出さない）
+function markHelpSeen() {
+  try {
+    localStorage.setItem(LS_HELP_SEEN, "true");
+    return localStorage.getItem(LS_HELP_SEEN) === "true";
+  } catch {
+    return false;
+  }
+}
+function showHelpWelcome() {
+  if (isHelpSeen()) return;
+  // 共有リンク(?fav=)経由は取り込み確認を優先し、案内は次の通常起動に回す（フラグも立てない）
+  if (new URLSearchParams(location.search).has("fav") || fromFavLink) return;
+  if (!markHelpSeen()) return;
+  const backdrop = el("div", { class: "modal-backdrop", onclick: (e) => { if (e.target === backdrop) backdrop.remove(); } });
+  const sheet = el("div", { class: "modal-sheet" }, [
+    el("div", { class: "modal-title" }, "はじめての方へ"),
+    el("p", {}, "出演者のお気に入り登録、マップ、マイタイムテーブルなど、アプリの使い方を説明したページがあります。"),
+    el("p", { class: "sub-note", style: "margin:0 0 12px" }, "あとから見たいときは、右上の ☰ →「使い方」から開けます。"),
+    el("div", { class: "btn-row" }, [
+      // 自動でwindow.openするとポップアップとしてブロックされるので、ダイアログ経由のリンクで新しいタブに開く
+      el("a", { class: "btn primary", href: HELP_URL, target: "_blank", rel: "noopener", onclick: () => backdrop.remove() }, "使い方を見る"),
+      el("button", { class: "btn", onclick: () => backdrop.remove() }, "あとで"),
+    ]),
+  ]);
+  backdrop.appendChild(sheet);
+  $modalRoot.appendChild(backdrop);
+}
+
 function openSettingsModal() {
   const backdrop = el("div", { class: "modal-backdrop", onclick: (e) => { if (e.target === backdrop) backdrop.remove(); } });
   const sheet = el("div", { class: "modal-sheet" });
@@ -1590,6 +1858,21 @@ function openSettingsModal() {
       ])
     ])
   );
+  aboutSection.appendChild(el("p", { class: "sub-note", style: "margin:10px 0 0" }, "本アプリ: MIT License © 2026 ishinttr-eng"));
+  const appLog = store.state.appChangelog?.entries || [];
+  if (appLog.length) {
+    const det = el("details", { class: "app-changelog" });
+    det.appendChild(el("summary", {}, "アプリの更新履歴"));
+    let lastDate = null;
+    appLog.forEach((e) => {
+      if (e.date !== lastDate) {
+        det.appendChild(el("div", { class: "changelog-date" }, e.date));
+        lastDate = e.date;
+      }
+      det.appendChild(el("div", { class: "changelog-item" }, [el("span", { class: "tag" }, e.version), el("span", {}, e.text)]));
+    });
+    aboutSection.appendChild(det);
+  }
   sheet.appendChild(aboutSection);
 
   // オープンソース & データクレジット
@@ -1684,10 +1967,12 @@ async function shareFavoritesLink() {
   }
 }
 
+let fromFavLink = false;
 function checkUrlImport() {
   const params = new URLSearchParams(location.search);
   const fav = params.get("fav");
   if (fav) {
+    fromFavLink = true;
     const keys = fav.split(",").filter(Boolean);
     confirmImport(keys);
     history.replaceState({}, "", location.pathname);
@@ -1761,6 +2046,7 @@ async function init() {
   updateHeaderInfo();
   if (store.state.settings.autoLocate && !store.state.settings.simGeo) locateOnce();
   render();
+  showHelpWelcome();
   store.fetchWeather().then((w) => {
     weatherData = w;
     render();

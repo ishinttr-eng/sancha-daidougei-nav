@@ -1,6 +1,6 @@
 // 三茶大道芸ナビ Service Worker
 // UI・見た目・ロジックを変更したら必ず VERSION を上げること
-const VERSION = "v2";
+const VERSION = "v3";
 const CACHE_NAME = `scd-${VERSION}`;
 
 const APP_SHELL = [
@@ -53,6 +53,9 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+
+  // 使い方ページはアプリ本体と切り離し、常にネットワークから取る（文言の修正をすぐ反映するため）
+  if (url.pathname.endsWith("/help.html")) return;
 
   if (isTileRequest(url)) return; // 地図タイルはキャッシュしない（容量対策）
 

@@ -32,6 +32,16 @@ export function perfKey(p) {
   return `${p.id}__${p.date}__${p.start}`;
 }
 
+// チームの同一性は公式ページURLで判定し、無ければ名前で束ねる
+export function teamKey(p) {
+  return p.officialUrl || p.name;
+}
+
+// 枠単位の終了判定（会場の一部だけ終わっている時に、終わった枠だけを畳むために使う）
+export function isPerfFinished(p, curDate, curMin) {
+  return p.date < curDate || (p.date === curDate && p.endMin <= curMin);
+}
+
 const R = 6371000;
 export function haversine(lat1, lng1, lat2, lng2) {
   const toRad = (d) => (d * Math.PI) / 180;

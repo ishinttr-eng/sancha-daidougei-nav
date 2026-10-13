@@ -1,0 +1,23 @@
+#!/bin/sh
+# UI/ロジックを変えたのに sw.js の VERSION を上げ忘れるのを防ぐ。
+# 有効化: cp tools/git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+# 意図的にスキップする場合: git commit --no-verify
+staged=$(git diff --cached --name-only)
+if echo "$staged" | grep -qE '^(js/app\.js|js/store\.js|js/util\.js|css/style\.css|index\.html)$'; then
+  if ! echo "$staged" | grep -qx 'sw.js'; then
+    echo "pre-commit: UI/ロジックを変更していますが sw.js がステージされていません。VERSION を上げてください。" >&2
+    exit 1
+  fi
+  if ! git diff --cached -U0 sw.js | grep -qE '^[+-]const VERSION ='; then
+    echo "pre-commit: sw.js は変更されていますが const VERSION の行が変わっていません。" >&2
+    exit 1
+  fi
+fi
+# sw.js が空・VERSION 行が消えた状態でコミットされるのを防ぐ（スクリプトで書き換えて空になった事故の対策）
+if echo "$staged" | grep -qx 'sw.js'; then
+  if ! git show :sw.js | grep -q 'const VERSION ='; then
+    echo "pre-commit: ステージされた sw.js に const VERSION がありません（ファイルが空になっていないか確認）。" >&2
+    exit 1
+  fi
+fi
+exit 0

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>使い方 | 三茶大道芸ナビ 2026</title>
+<script>
+  try {
+    var s = JSON.parse(localStorage.getItem("scd.settings.v1") || "{}");
+    if (s.theme === "dark" || s.theme === "light") document.documentElement.setAttribute("data-theme", s.theme);
+  } catch (e) {}
+</script>
+<style>
+  :root { --ink:#eef1f7; --muted:#9aa3b8; --bg:#10131f; --card:#1b2036; --line:#2a3050; --accent:#e6a740; color-scheme: dark; }
+  :root[data-theme="light"] { --ink:#1c2029; --muted:#666d80; --bg:#f6f7fb; --card:#fff; --line:#dfe3ee; --accent:#b3791b; color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.7 "Hiragino Sans","Noto Sans JP",system-ui,sans-serif; overflow-x:hidden; }
+  main { max-width:680px; margin:0 auto; padding:16px 16px 60px; }
+  h1 { font-size:1.4rem; margin:8px 0 6px; }
+  h2 { font-size:1.05rem; margin:28px 0 8px; color:var(--accent); }
+  p, li { overflow-wrap:anywhere; }
+  .note { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:.86rem; color:var(--muted); }
+  a { color:var(--accent); }
+  .back { display:inline-block; margin-top:28px; padding:9px 16px; border:1px solid var(--line); border-radius:10px; text-decoration:none; background:var(--card); }
+</style>
+</head>
+<body>
+<main>
+  <h1>使い方</h1>
+  <p class="note">初回起動時の案内から開けます。もう一度見たいときは、アプリ右上の ☰ →「使い方」を選んでください。</p>
+
+  <h2>🎪 上演中</h2>
+  <ul>
+    <li>いま上演中の演目と、30分以内に始まる演目が出ます。</li>
+    <li>「📍 現在地を取得」を押すと、各会場までの徒歩時間と「間に合う／間に合わない」が表示されます。</li>
+    <li>その日の演目がすべて終わった会場は「🏁 終了したステージ」にまとまります。</li>
+  </ul>
+
+  <h2>📅 出演者</h2>
+  <ul>
+    <li>日付タブは会場ごとに演目を並べます。「チーム」タブはチームごとに全出演枠をまとめて見られます。</li>
+    <li>名前・かなで検索でき、会場とジャンルで絞り込めます。</li>
+    <li>カードをタップすると詳細。☆でお気に入りに登録できます。</li>
+    <li>お気に入りに登録した枠と時間が重なる枠は、薄い青の背景で、重なっている枠の会場とチーム名が表示されます。見たい枠が重ならないように選ぶ目安にしてください。</li>
+    <li>同じチームの別の枠をお気に入りにしていると、☆がオレンジ色になります。</li>
+    <li>詳細の「📄 公式サイトのチーム紹介」で、公式サイトのチーム紹介ページをアプリ内で開けます。</li>
+  </ul>
+
+  <h2>🗺️ マップ</h2>
+  <ul>
+    <li>会場のピンをタップすると、その会場のタイムテーブルと、現在地や他の会場からの徒歩時間・ルートが見られます。</li>
+    <li>「🎟️ マイルート」は、お気に入りを回る順に、次に向かう会場への経路を区間ごとに色分けして表示します。同じ会場が続く間は1区間にまとまります。カードを上下にスワイプ（または▲▼）すると、選んだ区間だけが濃く表示されます。</li>
+  </ul>
+
+  <h2>★ マイタイムテーブル</h2>
+  <ul>
+    <li>お気に入りを時系列に並べます。同じ会場が続く間は1つの箱にまとまり、別の会場へ移る間に徒歩時間が表示されます。</li>
+    <li>時間の重なりや移動時間の不足は「⚠️ 時間・移動の警告」に件数が出ます。タップで開くと内容を確認できます。</li>
+    <li>「リスト」と「スケジュール表」を切り替えられます。切り替えるまでは、お気に入りの会場数に応じて自動で選ばれます。</li>
+  </ul>
+
+  <h2>設定・共有</h2>
+  <ul>
+    <li>☰ →「設定」で、文字サイズ、時刻・現在地のシミュレーション、お気に入りの共有・書き出し・読み込みができます。</li>
+    <li>機種変更のときは、お気に入りを共有リンクかファイルで移せます。</li>
+  </ul>
+
+  <h2>ご注意</h2>
+  <ul>
+    <li>お気に入りなどのデータはこの端末のブラウザ内にだけ保存され、外部には送信されません。</li>
+    <li>本アプリは有志による<strong>非公式</strong>のファンアプリで、主催者とは関係ありません。最新・正確な情報は必ず<a href="https://arttown.jp/" target="_blank" rel="noopener">公式サイト</a>でご確認ください。</li>
+    <li>公式サイトのチーム紹介ページは、オフラインでは表示されません。</li>
+  </ul>
+
+  <a class="back" href="./">アプリに戻る</a>
+</main>
+</body>
+</html>

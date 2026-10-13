@@ -322,9 +322,7 @@ details.finished-group[open] > summary { margin-bottom: 4px; }
 .route-banner-btns { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
 
 /* ---------- map ---------- */
-/* heightはJS(fitMapHeight)が実際の残り高さを計算して毎回インラインで上書きする。
-   min-heightをここで大きくすると、狭い画面でJSが計算した小さめの高さより
-   min-heightが優先されてしまい、タブバーへ食い込む原因になるためJS側の下限と揃える。 */
+/* 高さは #app.screen-map のフレックスレイアウトが残り高さを割り当てる（末尾のルール参照）。 */
 #map-view { height: calc(100vh - 210px); min-height: 200px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); isolation: isolate; }
 .map-toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
 .map-search-wrap { position: relative; flex: 1 1 140px; }
@@ -464,3 +462,103 @@ footer.data-footer { text-align: center; color: var(--muted); font-size: .72rem;
 .credits-list a { color: var(--accent); text-decoration: underline; }
 
 
+
+/* ---------- お気に入りの見分けと時間の重なり ---------- */
+:root { --clash: #4f8dff; --clash-soft: #4f8dff1f; }
+:root[data-theme="light"] { --clash: #2f6fe0; --clash-soft: #2f6fe018; }
+.fav-btn.other { color: var(--accent); }
+.perf-card.faved { background: var(--accent-soft); border-left: 4px solid var(--accent); }
+.perf-card.clash { background: var(--clash-soft); }
+.clash-badge {
+  display: inline-block; margin-top: 6px; max-width: 100%;
+  font-size: .68rem; padding: 2px 7px; border-radius: 6px;
+  border: 1px solid var(--clash); color: var(--clash);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ---------- 折りたたみの矢印（終了済み・警告） ---------- */
+details.finished-group > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+details.finished-group > summary::after {
+  content: ""; width: 8px; height: 8px; flex: none;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg); transition: transform .15s;
+}
+details.finished-group[open] > summary::after { transform: rotate(45deg); }
+
+/* ---------- マイタイムテーブル: 連続区間の箱 ---------- */
+.run-box {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  overflow: hidden; margin-bottom: 8px; box-shadow: var(--shadow);
+}
+.run-head {
+  display: flex; align-items: baseline; gap: 8px; padding: 8px 12px;
+  font-family: var(--font-display); font-weight: 700; font-size: .88rem; color: var(--accent);
+  border-bottom: 1px solid var(--line); background: var(--bg-2);
+}
+.run-head .stageno { font-family: var(--font-mono); font-size: .72rem; color: var(--muted); }
+.run-box .perf-card {
+  border: none; border-radius: 0; box-shadow: none; margin: 0;
+  border-bottom: 1px solid var(--line); border-left: 3px solid transparent;
+}
+.run-box .perf-card:last-child { border-bottom: none; }
+.run-box .perf-card.now { border-left-color: var(--ok); box-shadow: none; }
+.run-box .perf-card.soon { border-left-color: var(--warn); }
+
+/* ---------- 出演枠リスト・チームタブ ---------- */
+.team-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+  padding: 12px; margin-bottom: 10px; box-shadow: var(--shadow);
+}
+.team-name { font-weight: 700; font-size: 1rem; margin-bottom: 4px; word-break: break-word; }
+.team-slots { margin: 14px 0; }
+.team-slots h4 { font-size: .78rem; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+.slot-box { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+.slot-date { padding: 5px 10px; font-size: .74rem; font-family: var(--font-mono); color: var(--muted); background: var(--bg-2); }
+.slot-row {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer;
+  border-top: 1px solid var(--line); border-left: 3px solid transparent; font-size: .84rem;
+}
+.slot-row.faved { background: var(--accent-soft); border-left-color: var(--accent); }
+.slot-row.current { outline: 2px solid var(--route); outline-offset: -2px; }
+.slot-time { font-family: var(--font-mono); font-size: .76rem; color: var(--muted); white-space: nowrap; }
+.slot-venue { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- ☰メニュー ---------- */
+#app-header { position: sticky; }
+#menu-pop {
+  position: absolute; top: calc(100% + 4px); right: 10px; z-index: 80;
+  background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: var(--shadow); overflow: hidden; min-width: 160px;
+}
+#menu-pop[hidden] { display: none; }
+#menu-pop button, #menu-pop a {
+  display: block; width: 100%; text-align: left; padding: 12px 16px;
+  background: none; border: none; border-bottom: 1px solid var(--line);
+  color: var(--ink); text-decoration: none; font-size: .9rem; cursor: pointer;
+}
+#menu-pop > :last-child { border-bottom: none; }
+#menu-pop button:hover, #menu-pop a:hover { background: var(--card); }
+
+/* ---------- アプリ更新履歴（設定内） ---------- */
+details.app-changelog { margin-top: 10px; }
+details.app-changelog > summary { cursor: pointer; color: var(--muted); font-size: .82rem; padding: 6px 0; }
+
+/* ---------- 公式ページビューア ---------- */
+.official-viewer {
+  position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; background: var(--bg);
+}
+.ov-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
+.ov-title { flex: 1; min-width: 0; }
+.ov-name { font-weight: 700; font-size: .92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ov-src { font-size: .68rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ov-frame { flex: 1; width: 100%; border: none; background: #fff; }
+.ov-note { padding: 6px 12px calc(6px + var(--safe-bottom)); font-size: .72rem; color: var(--muted); background: var(--bg-2); border-top: 1px solid var(--line); }
+
+/* ---------- マップタブ: 高さはCSSのフレックスで受ける（JSで測らない） ---------- */
+#app.screen-map { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+#app.screen-map #main { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
+#app.screen-map #main > * { flex: 0 0 auto; }
+#app.screen-map #main > #map-view { flex: 1 1 0; min-height: 200px; height: auto; }
+#map-view > .leaflet-container { height: 100%; min-height: 0; border: none; border-radius: 0; }

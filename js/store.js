@@ -1,6 +1,6 @@
 // 三茶大道芸ナビ - 状態管理・データ読み込み
 
-import { toMin, perfKey, DAYS, WEATHER_LAT, WEATHER_LNG } from "./util.js";
+import { toMin, perfKey, teamKey, DAYS, WEATHER_LAT, WEATHER_LNG } from "./util.js";
 
 const LS = {
   favorites: "scd.favorites.v1",
@@ -34,6 +34,8 @@ export const state = {
   changes: null,
   appChangelog: null,
   performancesUpdatedAt: null,
+  perfByKey: new Map(),
+  teamSlotsMap: new Map(),
   favorites: new Set(loadJSON(LS.favorites, [])),
   settings: Object.assign(
     {
@@ -87,6 +89,15 @@ export async function loadAll() {
     endMin: toMin(p.end),
   }));
   state.performancesUpdatedAt = performances.updatedAt || null;
+  state.perfByKey = new Map(state.performances.map((p) => [perfKey(p), p]));
+  state.teamSlotsMap = new Map();
+  [...state.performances]
+    .sort((a, b) => a.date.localeCompare(b.date) || a.startMin - b.startMin)
+    .forEach((p) => {
+      const k = teamKey(p);
+      if (!state.teamSlotsMap.has(k)) state.teamSlotsMap.set(k, []);
+      state.teamSlotsMap.get(k).push(p);
+    });
 
   const optional = async (path, fallback) => {
     try {
@@ -111,6 +122,14 @@ export async function loadAll() {
   state.appChangelog = appChangelog;
 }
 
+export function perfByKey(key) {
+  return state.perfByKey.get(key);
+}
+// 同じチームの全出演枠（日付・開始順）
+export function teamSlots(p) {
+  return state.teamSlotsMap.get(teamKey(p)) || [p];
+}
+
 export function venueById(id) {
   return state.venues.find((v) => v.id === id);
 }
@@ -133,11 +152,19 @@ export function routeBetween(idA, idB) {
 export async function fetchWeather() {
   // Open-Meteoの予報は16日先まで。範囲外の日付を投げると400になるので、開催日が近づくまでは取得しない
   const firstDay = new Date(`${DAYS[0]}T00:00:00+09:00`);
-  if (firstDay - Date.now() > 15 * 24 * 60 * 60 * 1000) return null;
+  if (firstDay - Date.now() > 15 * 24 * 60 * 60 * 1000) {
+    console.warn("[weather] 開催日が予報の取得可能期間（約16日）より先のため取得しません");
+    return null;
+  }
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${WEATHER_LAT}&longitude=${WEATHER_LNG}&hourly=temperature_2m,precipitation_probability,weathercode&timezone=Asia%2FTokyo&start_date=${DAYS[0]}&end_date=${DAYS[DAYS.length - 1]}`;
     const res = await fetch(url);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // 原因の切り分け用。取得できない間も画面側はプレースホルダーで枠を残す
+      const body = await res.json().catch(() => null);
+      console.warn("[weather] 取得に失敗:", res.status, body?.reason || "");
+      return null;
+    }
     const data = await res.json();
     const map = {};
     data.hourly.time.forEach((t, i) => {
@@ -148,7 +175,8 @@ export async function fetchWeather() {
       };
     });
     return map;
-  } catch {
+  } catch (e) {
+    console.warn("[weather] 取得に失敗:", e);
     return null;
   }
 }
