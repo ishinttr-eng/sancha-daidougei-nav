@@ -1799,10 +1799,26 @@ function openSettingsModal() {
     onchange: (e) => {
       store.state.settings.simTime = e.target.value || null;
       store.persistSettings();
+      simReset.disabled = !store.state.settings.simTime;
       render();
     },
   });
-  simRow.appendChild(simInput);
+  const simReset = el(
+    "button",
+    {
+      class: "btn small",
+      disabled: !store.state.settings.simTime,
+      onclick: () => {
+        store.state.settings.simTime = null;
+        store.persistSettings();
+        simInput.value = "";
+        simReset.disabled = true;
+        render();
+      },
+    },
+    "リセット"
+  );
+  simRow.appendChild(el("div", { style: "display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end" }, [simInput, simReset]));
   sheet.appendChild(simRow);
 
   // 現在地シミュレーション
