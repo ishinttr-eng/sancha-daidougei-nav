@@ -1,6 +1,6 @@
 // 三茶大道芸ナビ Service Worker
 // UI・見た目・ロジックを変更したら必ず VERSION を上げること
-const VERSION = "v8";
+const VERSION = "v9";
 const CACHE_NAME = `scd-${VERSION}`;
 
 const APP_SHELL = [

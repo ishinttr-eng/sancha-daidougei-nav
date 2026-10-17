@@ -6,6 +6,7 @@ const LS = {
   favorites: "scd.favorites.v1",
   settings: "scd.settings.v1",
   seenChanges: "scd.seenChanges.v1",
+  venueCoords: "scd.venueCoords.v1",
 };
 
 function loadJSON(key, fallback) {
@@ -42,7 +43,6 @@ export const state = {
       fontSize: "normal", // normal | large
       simTime: null, // "2026-10-17T13:00" 等
       simGeo: null, // {lat,lng}
-      geoOffset: null, // GPSのずれの手動補正 {dLat,dLng}。現在地(GPS)に足して使う
       autoLocate: false,
       theme: "system",
     },
@@ -50,6 +50,7 @@ export const state = {
   ),
   seenChangeAt: loadJSON(LS.seenChanges, null),
   currentGeo: null,
+  venueOverrides: loadJSON(LS.venueCoords, {}), // 会場座標の手動補正 { 会場ID: {lat,lng} }
 };
 
 export function persistFavorites() {
@@ -84,6 +85,7 @@ export async function loadAll() {
     fetchJSON("data/performances.json"),
   ]);
   state.venues = venues.venues;
+  applyVenueOverrides();
   state.performances = performances.performances.map((p) => ({
     ...p,
     startMin: toMin(p.start),
@@ -123,6 +125,42 @@ export async function loadAll() {
   state.appChangelog = appChangelog;
 }
 
+// 公式の略図から推定した会場座標は実際とずれるので、端末ごとに手動補正できる。補正値は公式データとは別に持ち、
+// 読み込みのたびに venue.lat/lng へ上書きする（venue.orig に元の座標を残す）
+function applyVenueOverrides() {
+  state.venues.forEach((v) => {
+    v.orig = { lat: v.lat, lng: v.lng };
+    const o = state.venueOverrides[v.id];
+    if (o) {
+      v.lat = o.lat;
+      v.lng = o.lng;
+    }
+  });
+}
+export function isVenueOverridden(id) {
+  return !!state.venueOverrides[id];
+}
+export function setVenueOverride(id, lat, lng) {
+  const v = venueById(id);
+  if (!v) return;
+  state.venueOverrides[id] = { lat, lng };
+  v.lat = lat;
+  v.lng = lng;
+  saveJSON(LS.venueCoords, state.venueOverrides);
+}
+export function clearVenueOverride(id) {
+  const v = venueById(id);
+  delete state.venueOverrides[id];
+  if (v && v.orig) {
+    v.lat = v.orig.lat;
+    v.lng = v.orig.lng;
+  }
+  saveJSON(LS.venueCoords, state.venueOverrides);
+}
+export function clearAllVenueOverrides() {
+  Object.keys(state.venueOverrides).forEach((id) => clearVenueOverride(id));
+}
+
 export function perfByKey(key) {
   return state.perfByKey.get(key);
 }
@@ -137,6 +175,7 @@ export function venueById(id) {
 
 export function walkMinutes(idA, idB) {
   if (!state.walktimes || idA === idB) return 0;
+  if (isVenueOverridden(idA) || isVenueOverridden(idB)) return null; // 事前計算は補正前の座標ベース
   const { ids, minutes } = state.walktimes;
   const i = ids.indexOf(idA);
   const j = ids.indexOf(idB);
@@ -146,6 +185,7 @@ export function walkMinutes(idA, idB) {
 
 export function routeBetween(idA, idB) {
   if (!state.routes) return null;
+  if (isVenueOverridden(idA) || isVenueOverridden(idB)) return null;
   const key = [idA, idB].sort().join("|");
   return state.routes.routes[key] || null;
 }

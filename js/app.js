@@ -43,7 +43,8 @@ const mapState = {
   zoom: null,
   layer: null,
   geoMarker: null,
-  correcting: false, // 位置補正モード（地図をタップして実際の位置を教える）
+  editingVenueId: null, // 会場位置の補正モード中の会場ID（地図をタップして正しい位置を教える）
+  hintEl: null,
   singleRoute: null,
   myRouteSegInfo: null,
   myRouteApplyHighlight: null,
@@ -71,9 +72,7 @@ function effectiveNow() {
 }
 function effectiveGeo() {
   if (store.state.settings.simGeo) return store.state.settings.simGeo;
-  const g = store.state.currentGeo;
-  const o = store.state.settings.geoOffset;
-  return g && o ? { lat: g.lat + o.dLat, lng: g.lng + o.dLng } : g;
+  return store.state.currentGeo;
 }
 function curDateMin() {
   const d = effectiveNow();
@@ -273,7 +272,7 @@ function locationRow() {
     return el(
       "div",
       { class: "loc-row" },
-      el("span", { class: "sub-note" }, `📍 現在地取得済み${store.state.settings.geoOffset ? "（手動補正中）" : ""}（徒歩時間は直線距離からの目安）`)
+      el("span", { class: "sub-note" }, "📍 現在地取得済み（徒歩時間は直線距離からの目安）")
     );
   }
   const btn = el(
@@ -799,6 +798,12 @@ function openVenueModal(venueId, day) {
         : `https://www.google.com/maps/dir/?api=1&destination=${venue.lat},${venue.lng}&travelmode=walking`;
     btnRow.appendChild(el("a", { class: "btn", href: gmaps, target: "_blank", rel: "noopener" }, "ここへ行く"));
     sheet.appendChild(btnRow);
+    sheet.appendChild(
+      el("div", { class: "btn-row", style: "margin-top:6px;align-items:center" }, [
+        el("button", { class: "btn small", onclick: () => { close(); startVenueEdit(venue); } }, "📍 会場の位置を補正"),
+        store.isVenueOverridden(venue.id) ? el("span", { class: "sub-note" }, "手動で補正済み") : null,
+      ])
+    );
 
     const list = el("div", { class: "modal-section" });
     const ps = store.state.performances
@@ -1099,59 +1104,17 @@ function initOrUpdateMap(mapDiv, date, min) {
     };
     locBtn.addTo(map);
 
-    // 位置補正モード: 🎯を押して、地図上で実際にいる場所をタップするとGPSとのずれを記録する
+    // 会場位置の補正モード: 会場詳細の「会場の位置を補正」から入り、地図上の正しい位置をタップすると保存する
     const hint = L.DomUtil.create("div", "map-correct-hint", map.getContainer());
     hint.hidden = true;
     L.DomEvent.disableClickPropagation(hint);
-    const setHint = (text, { cancel = false, reset = false } = {}) => {
-      hint.replaceChildren(el("span", {}, text));
-      if (reset) hint.appendChild(el("button", { type: "button", class: "btn small", onclick: () => { clearGeoOffset(); setHint(null); } }, "補正を解除"));
-      if (cancel) hint.appendChild(el("button", { type: "button", class: "btn small", onclick: () => { mapState.correcting = false; setHint(null); } }, "やめる"));
-      hint.hidden = !text;
-    };
-    const correctBtn = L.control({ position: "topleft" });
-    correctBtn.onAdd = () => {
-      const b = L.DomUtil.create("button", "map-loc-btn");
-      b.type = "button";
-      b.textContent = "🎯";
-      b.title = "位置を手動で補正";
-      L.DomEvent.disableClickPropagation(b);
-      L.DomEvent.on(b, "click", async (e) => {
-        L.DomEvent.stop(e);
-        if (mapState.correcting) {
-          mapState.correcting = false;
-          setHint(null);
-          return;
-        }
-        if (store.state.settings.simGeo) {
-          setHint("現在地シミュレーション中は補正できません（⚙️設定で解除）");
-          setTimeout(() => setHint(null), 2500);
-          return;
-        }
-        if (!store.state.currentGeo) {
-          setHint("現在地を取得中…");
-          try {
-            await locateOnce();
-          } catch {
-            setHint("現在地を取得できないため補正できません");
-            setTimeout(() => setHint(null), 2500);
-            return;
-          }
-        }
-        mapState.correcting = true;
-        setHint("実際にいる場所を地図でタップしてください", { cancel: true, reset: !!store.state.settings.geoOffset });
-      });
-      return b;
-    };
-    correctBtn.addTo(map);
+    mapState.hintEl = hint;
     map.on("click", (e) => {
-      if (!mapState.correcting) return;
-      const raw = store.state.currentGeo;
-      mapState.correcting = false;
-      setHint(null);
-      if (!raw) return;
-      store.state.settings.geoOffset = { dLat: e.latlng.lat - raw.lat, dLng: e.latlng.lng - raw.lng };
-      store.persistSettings();
+      const id = mapState.editingVenueId;
+      if (!id) return;
+      store.setVenueOverride(id, e.latlng.lat, e.latlng.lng);
+      mapState.editingVenueId = null;
+      syncEditHint();
       render();
     });
 
@@ -1163,6 +1126,7 @@ function initOrUpdateMap(mapDiv, date, min) {
     if (mapState.center) mapState.instance.setView(mapState.center, mapState.zoom, { animate: false });
   }
   drawMapLayer(date, min);
+  syncEditHint();
 }
 
 function drawMapLayer(date, min) {
@@ -1213,7 +1177,7 @@ function drawMapLayer(date, min) {
   if (geo) {
     L.circleMarker([geo.lat, geo.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#3d8bff", fillOpacity: 1 })
       .addTo(layer)
-      .bindPopup(store.state.settings.geoOffset && !store.state.settings.simGeo ? "現在地（手動補正中）" : "現在地");
+      .bindPopup("現在地");
   }
 }
 
@@ -1899,17 +1863,19 @@ function openSettingsModal() {
   geoSimRow.appendChild(geoSwitch);
   sheet.appendChild(geoSimRow);
 
-  // 位置の手動補正
-  const offRow = el("div", { class: "settings-row" });
-  offRow.appendChild(
+  // 会場位置の手動補正
+  const nOver = Object.keys(store.state.venueOverrides).length;
+  const venueRow = el("div", { class: "settings-row" });
+  venueRow.appendChild(
     el("div", {}, [
-      el("div", { class: "label" }, "位置の手動補正"),
-      el("div", { class: "desc" }, store.state.settings.geoOffset ? "補正中です（現在地のずれを手動で直しています）" : "マップの🎯から、実際にいる場所をタップして補正できます"),
+      el("div", { class: "label" }, "会場位置の手動補正"),
+      el("div", { class: "desc" }, nOver ? `${nOver}会場を補正中です` : "会場の詳細から、地図上の正しい位置を指定して直せます"),
     ])
   );
-  const offReset = el("button", { class: "btn small", disabled: !store.state.settings.geoOffset, onclick: () => { clearGeoOffset(); backdrop.remove(); openSettingsModal(); } }, "解除");
-  offRow.appendChild(offReset);
-  sheet.appendChild(offRow);
+  venueRow.appendChild(
+    el("button", { class: "btn small", disabled: !nOver, onclick: () => { store.clearAllVenueOverrides(); render(); backdrop.remove(); openSettingsModal(); } }, "すべて元に戻す")
+  );
+  sheet.appendChild(venueRow);
 
   // 現在地の自動更新
   const autoRow = el("div", { class: "settings-row" });
@@ -2074,12 +2040,37 @@ function checkUrlImport() {
   }
 }
 
-// ---------- 現在地取得 ----------
-function clearGeoOffset() {
-  store.state.settings.geoOffset = null;
-  store.persistSettings();
+// ---------- 会場位置の補正モード ----------
+function startVenueEdit(venue) {
+  activeTab = "map";
+  ui.mapMode = "normal";
+  mapState.singleRoute = null;
+  mapState.selectedVenueId = venue.id;
+  mapState.editingVenueId = venue.id;
   render();
+  focusMapOnVenue(venue);
 }
+
+// 補正モード中の案内バーを、状態に合わせて出す／隠す。地図を作り直さず再利用するので、描画のたびに呼ぶ
+function syncEditHint() {
+  const hint = mapState.hintEl;
+  if (!hint) return;
+  const venue = mapState.editingVenueId && store.venueById(mapState.editingVenueId);
+  if (!venue) {
+    hint.hidden = true;
+    return;
+  }
+  hint.replaceChildren(el("span", {}, `「${venue.stageNo}. ${venue.name}」の正しい位置を地図でタップしてください`));
+  if (store.isVenueOverridden(venue.id)) {
+    hint.appendChild(
+      el("button", { type: "button", class: "btn small", onclick: () => { store.clearVenueOverride(venue.id); mapState.editingVenueId = null; render(); } }, "元の位置に戻す")
+    );
+  }
+  hint.appendChild(el("button", { type: "button", class: "btn small", onclick: () => { mapState.editingVenueId = null; syncEditHint(); } }, "やめる"));
+  hint.hidden = false;
+}
+
+// ---------- 現在地取得 ----------
 
 function locateOnce() {
   return new Promise((resolve, reject) => {
