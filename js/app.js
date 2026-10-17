@@ -2059,7 +2059,16 @@ async function updateHeaderInfo() {
 
 // 新しいService Workerが有効化されてページの制御を引き継いだら、ヘッダーのバージョン表示を追従させる
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.addEventListener("controllerchange", () => updateHeaderInfo());
+  // 更新版のService Workerが引き継いだら一度だけ再読み込みして、古いJSのまま使い続けるのを防ぐ（初回インストール時は除く）
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    updateHeaderInfo();
+    if (hadController && !reloaded) {
+      reloaded = true;
+      location.reload();
+    }
+  });
 }
 
 // ---------- init ----------
