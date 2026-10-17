@@ -52,6 +52,9 @@ body {
 }
 html.font-large body { font-size: 17px; }
 button, input, select { font: inherit; color: inherit; }
+/* iOS Safariは文字サイズが16px未満の入力欄にフォーカスすると画面を勝手に拡大し、レイアウトが横に広がる。
+   入力欄だけは常に16px以上にして防ぐ（文字サイズ「大」では本文に追従） */
+input, select, textarea { font-size: max(16px, 1em); }
 a { color: var(--route); }
 ::selection { background: var(--accent-soft); }
 
