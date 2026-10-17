@@ -233,13 +233,24 @@ function refreshFavButtons() {
     const p = store.perfByKey(b.dataset.pid);
     if (p) applyFavState(b, p);
   });
+  // 詳細モーダル上部の大きなお気に入りボタン（枠リストの☆と同期させる）
+  document.querySelectorAll(".fav-main[data-pid]").forEach((b) => {
+    const p = store.perfByKey(b.dataset.pid);
+    if (p) applyMainFavState(b, p);
+  });
+}
+
+function applyMainFavState(btn, p) {
+  const fav = store.isFavorite(p);
+  btn.textContent = fav ? "★ お気に入り登録済み" : "☆ お気に入りに追加";
+  btn.classList.toggle("primary", fav);
 }
 
 function onToggleFav(p) {
   store.toggleFavorite(p);
   // マイタイムテーブルは一覧の中身そのものが変わるので再描画。それ以外は☆の更新だけで済ます
   if (activeTab === "mytt") render();
-  else refreshFavButtons();
+  refreshFavButtons(); // マイタイムテーブル再描画時も、前面の詳細モーダルの☆は更新が必要
 }
 
 function estimateWalk(geo, venue) {
@@ -638,19 +649,16 @@ function openDetailModal(p) {
   if (links) sheet.appendChild(links);
 
   const favSection = el("div", { class: "modal-section" });
-  const favLabel = () => (store.isFavorite(p) ? "★ お気に入り登録済み" : "☆ お気に入りに追加");
   const favBtn = el(
     "button",
     {
-      class: `btn ${store.isFavorite(p) ? "primary" : ""} block`,
-      onclick: () => {
-        onToggleFav(p);
-        favBtn.textContent = favLabel();
-        favBtn.classList.toggle("primary", store.isFavorite(p));
-      },
+      class: "btn block fav-main",
+      "data-pid": perfKey(p),
+      onclick: () => onToggleFav(p),
     },
-    favLabel()
+    ""
   );
+  applyMainFavState(favBtn, p);
   favSection.appendChild(favBtn);
   sheet.appendChild(favSection);
 
