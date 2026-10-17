@@ -7,6 +7,8 @@ const LS = {
   settings: "scd.settings.v1",
   seenChanges: "scd.seenChanges.v1",
   venueCoords: "scd.venueCoords.v1",
+  venueLog: "scd.venueCoordsLog.v1",
+  maint: "scd.maint.v1",
 };
 
 function loadJSON(key, fallback) {
@@ -51,6 +53,8 @@ export const state = {
   seenChangeAt: loadJSON(LS.seenChanges, null),
   currentGeo: null,
   venueOverrides: loadJSON(LS.venueCoords, {}), // 会場座標の手動補正 { 会場ID: {lat,lng} }
+  venueLog: loadJSON(LS.venueLog, []), // 手動補正の履歴（新しい順に追記せず、古い順で持つ）
+  maintMode: loadJSON(LS.maint, false), // メンテナンス機能（会場位置の補正など）を出すか。URLの ?maint=1 か、設定画面の隠し操作で切り替える
 };
 
 export function persistFavorites() {
@@ -140,25 +144,59 @@ function applyVenueOverrides() {
 export function isVenueOverridden(id) {
   return !!state.venueOverrides[id];
 }
+function logVenueChange(action, v, before, after) {
+  state.venueLog.push({
+    at: new Date().toISOString(),
+    action, // set | clear
+    venueId: v.id,
+    stageNo: v.stageNo,
+    name: v.name,
+    from: { lat: before.lat, lng: before.lng },
+    to: { lat: after.lat, lng: after.lng },
+    original: v.orig ? { lat: v.orig.lat, lng: v.orig.lng } : null,
+  });
+  if (state.venueLog.length > 500) state.venueLog.splice(0, state.venueLog.length - 500);
+  saveJSON(LS.venueLog, state.venueLog);
+}
 export function setVenueOverride(id, lat, lng) {
   const v = venueById(id);
   if (!v) return;
+  const before = { lat: v.lat, lng: v.lng };
   state.venueOverrides[id] = { lat, lng };
   v.lat = lat;
   v.lng = lng;
   saveJSON(LS.venueCoords, state.venueOverrides);
+  logVenueChange("set", v, before, { lat, lng });
 }
 export function clearVenueOverride(id) {
   const v = venueById(id);
+  if (!state.venueOverrides[id]) return;
+  const before = v ? { lat: v.lat, lng: v.lng } : null;
   delete state.venueOverrides[id];
   if (v && v.orig) {
     v.lat = v.orig.lat;
     v.lng = v.orig.lng;
   }
   saveJSON(LS.venueCoords, state.venueOverrides);
+  if (v && before) logVenueChange("clear", v, before, { lat: v.lat, lng: v.lng });
 }
 export function clearAllVenueOverrides() {
   Object.keys(state.venueOverrides).forEach((id) => clearVenueOverride(id));
+}
+// 補正の現在値と履歴をまとめたもの（書き出し用）
+export function venueCorrectionsReport() {
+  return {
+    exportedAt: new Date().toISOString(),
+    current: Object.entries(state.venueOverrides).map(([id, to]) => {
+      const v = venueById(id);
+      return { venueId: id, stageNo: v?.stageNo ?? null, name: v?.name ?? null, original: v?.orig ?? null, corrected: to };
+    }),
+    history: state.venueLog,
+  };
+}
+export function setMaintMode(on) {
+  state.maintMode = !!on;
+  saveJSON(LS.maint, state.maintMode);
 }
 
 export function perfByKey(key) {

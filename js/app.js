@@ -798,12 +798,14 @@ function openVenueModal(venueId, day) {
         : `https://www.google.com/maps/dir/?api=1&destination=${venue.lat},${venue.lng}&travelmode=walking`;
     btnRow.appendChild(el("a", { class: "btn", href: gmaps, target: "_blank", rel: "noopener" }, "ここへ行く"));
     sheet.appendChild(btnRow);
-    sheet.appendChild(
-      el("div", { class: "btn-row", style: "margin-top:6px;align-items:center" }, [
-        el("button", { class: "btn small", onclick: () => { close(); startVenueEdit(venue); } }, "📍 会場の位置を補正"),
-        store.isVenueOverridden(venue.id) ? el("span", { class: "sub-note" }, "手動で補正済み") : null,
-      ])
-    );
+    if (store.state.maintMode) {
+      sheet.appendChild(
+        el("div", { class: "btn-row", style: "margin-top:6px;align-items:center" }, [
+          el("button", { class: "btn small", onclick: () => { close(); startVenueEdit(venue); } }, "📍 会場の位置を補正"),
+          store.isVenueOverridden(venue.id) ? el("span", { class: "sub-note" }, "手動で補正済み") : null,
+        ])
+      );
+    }
 
     const list = el("div", { class: "modal-section" });
     const ps = store.state.performances
@@ -1669,6 +1671,16 @@ function exportFavoritesFile() {
   URL.revokeObjectURL(url);
 }
 
+function exportVenueCorrections() {
+  const blob = new Blob([JSON.stringify(store.venueCorrectionsReport(), null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `sancha-daidougei-venue-corrections-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // ---------- 更新履歴 ----------
 document.getElementById("btn-changelog").addEventListener("click", openChangelogModal);
 function updateChangelogBadge() {
@@ -1863,19 +1875,25 @@ function openSettingsModal() {
   geoSimRow.appendChild(geoSwitch);
   sheet.appendChild(geoSimRow);
 
-  // 会場位置の手動補正
-  const nOver = Object.keys(store.state.venueOverrides).length;
-  const venueRow = el("div", { class: "settings-row" });
-  venueRow.appendChild(
-    el("div", {}, [
-      el("div", { class: "label" }, "会場位置の手動補正"),
-      el("div", { class: "desc" }, nOver ? `${nOver}会場を補正中です` : "会場の詳細から、地図上の正しい位置を指定して直せます"),
-    ])
-  );
-  venueRow.appendChild(
-    el("button", { class: "btn small", disabled: !nOver, onclick: () => { store.clearAllVenueOverrides(); render(); backdrop.remove(); openSettingsModal(); } }, "すべて元に戻す")
-  );
-  sheet.appendChild(venueRow);
+  // メンテナンス機能（会場位置の手動補正）。メンテナンスモードのときだけ出す
+  if (store.state.maintMode) {
+    const nOver = Object.keys(store.state.venueOverrides).length;
+    const nLog = store.state.venueLog.length;
+    const venueRow = el("div", { class: "settings-row", style: "flex-wrap:wrap" });
+    venueRow.appendChild(
+      el("div", {}, [
+        el("div", { class: "label" }, "🔧 会場位置の手動補正（メンテナンス）"),
+        el("div", { class: "desc" }, `${nOver ? `${nOver}会場を補正中` : "補正なし"} / 履歴${nLog}件。会場の詳細から補正できます`),
+      ])
+    );
+    const btns = el("div", { class: "btn-row", style: "margin:0" }, [
+      el("button", { class: "btn small", disabled: !nLog, onclick: exportVenueCorrections }, "履歴を書き出す"),
+      el("button", { class: "btn small", disabled: !nOver, onclick: () => { store.clearAllVenueOverrides(); render(); backdrop.remove(); openSettingsModal(); } }, "すべて元に戻す"),
+      el("button", { class: "btn small", onclick: () => { store.setMaintMode(false); backdrop.remove(); openSettingsModal(); } }, "メンテナンスモードを終了"),
+    ]);
+    venueRow.appendChild(btns);
+    sheet.appendChild(venueRow);
+  }
 
   // 現在地の自動更新
   const autoRow = el("div", { class: "settings-row" });
@@ -1908,7 +1926,22 @@ function openSettingsModal() {
 
   // このアプリについて & 免責事項
   const aboutSection = el("div", { class: "modal-section about-section" });
-  aboutSection.appendChild(el("h4", {}, "このアプリについて・免責事項"));
+  // 見出しを7回タップするとメンテナンスモードを切り替える（利用者には見せない隠し操作）
+  let aboutTaps = 0;
+  aboutSection.appendChild(
+    el(
+      "h4",
+      {
+        onclick: () => {
+          if (++aboutTaps < 7) return;
+          store.setMaintMode(!store.state.maintMode);
+          backdrop.remove();
+          openSettingsModal();
+        },
+      },
+      "このアプリについて・免責事項"
+    )
+  );
   aboutSection.appendChild(
     el("div", { class: "disclaimer-box" }, [
       el("p", {}, "本アプリは有志による非公式ファンアプリです。三茶de大道芸 実行委員会（三軒茶屋 太子堂 アートタウン）および関係団体とは一切関係ありません。"),
@@ -2031,6 +2064,13 @@ async function shareFavoritesLink() {
 let fromFavLink = false;
 function checkUrlImport() {
   const params = new URLSearchParams(location.search);
+  const maint = params.get("maint");
+  if (maint === "1" || maint === "0") {
+    store.setMaintMode(maint === "1");
+    params.delete("maint");
+    const rest = params.toString();
+    history.replaceState({}, "", location.pathname + (rest ? `?${rest}` : ""));
+  }
   const fav = params.get("fav");
   if (fav) {
     fromFavLink = true;
