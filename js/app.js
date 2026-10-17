@@ -43,6 +43,7 @@ const mapState = {
   zoom: null,
   layer: null,
   geoMarker: null,
+  correcting: false, // 位置補正モード（地図をタップして実際の位置を教える）
   singleRoute: null,
   myRouteSegInfo: null,
   myRouteApplyHighlight: null,
@@ -70,7 +71,9 @@ function effectiveNow() {
 }
 function effectiveGeo() {
   if (store.state.settings.simGeo) return store.state.settings.simGeo;
-  return store.state.currentGeo;
+  const g = store.state.currentGeo;
+  const o = store.state.settings.geoOffset;
+  return g && o ? { lat: g.lat + o.dLat, lng: g.lng + o.dLng } : g;
 }
 function curDateMin() {
   const d = effectiveNow();
@@ -270,7 +273,7 @@ function locationRow() {
     return el(
       "div",
       { class: "loc-row" },
-      el("span", { class: "sub-note" }, "📍 現在地取得済み（徒歩時間は直線距離からの目安）")
+      el("span", { class: "sub-note" }, `📍 現在地取得済み${store.state.settings.geoOffset ? "（手動補正中）" : ""}（徒歩時間は直線距離からの目安）`)
     );
   }
   const btn = el(
@@ -1096,6 +1099,62 @@ function initOrUpdateMap(mapDiv, date, min) {
     };
     locBtn.addTo(map);
 
+    // 位置補正モード: 🎯を押して、地図上で実際にいる場所をタップするとGPSとのずれを記録する
+    const hint = L.DomUtil.create("div", "map-correct-hint", map.getContainer());
+    hint.hidden = true;
+    L.DomEvent.disableClickPropagation(hint);
+    const setHint = (text, { cancel = false, reset = false } = {}) => {
+      hint.replaceChildren(el("span", {}, text));
+      if (reset) hint.appendChild(el("button", { type: "button", class: "btn small", onclick: () => { clearGeoOffset(); setHint(null); } }, "補正を解除"));
+      if (cancel) hint.appendChild(el("button", { type: "button", class: "btn small", onclick: () => { mapState.correcting = false; setHint(null); } }, "やめる"));
+      hint.hidden = !text;
+    };
+    const correctBtn = L.control({ position: "topleft" });
+    correctBtn.onAdd = () => {
+      const b = L.DomUtil.create("button", "map-loc-btn");
+      b.type = "button";
+      b.textContent = "🎯";
+      b.title = "位置を手動で補正";
+      L.DomEvent.disableClickPropagation(b);
+      L.DomEvent.on(b, "click", async (e) => {
+        L.DomEvent.stop(e);
+        if (mapState.correcting) {
+          mapState.correcting = false;
+          setHint(null);
+          return;
+        }
+        if (store.state.settings.simGeo) {
+          setHint("現在地シミュレーション中は補正できません（⚙️設定で解除）");
+          setTimeout(() => setHint(null), 2500);
+          return;
+        }
+        if (!store.state.currentGeo) {
+          setHint("現在地を取得中…");
+          try {
+            await locateOnce();
+          } catch {
+            setHint("現在地を取得できないため補正できません");
+            setTimeout(() => setHint(null), 2500);
+            return;
+          }
+        }
+        mapState.correcting = true;
+        setHint("実際にいる場所を地図でタップしてください", { cancel: true, reset: !!store.state.settings.geoOffset });
+      });
+      return b;
+    };
+    correctBtn.addTo(map);
+    map.on("click", (e) => {
+      if (!mapState.correcting) return;
+      const raw = store.state.currentGeo;
+      mapState.correcting = false;
+      setHint(null);
+      if (!raw) return;
+      store.state.settings.geoOffset = { dLat: e.latlng.lat - raw.lat, dLng: e.latlng.lng - raw.lng };
+      store.persistSettings();
+      render();
+    });
+
     mapState.instance = map;
   } else {
     // 別のdivへ再アタッチ（タブ切替でDOMが作り直されるため）
@@ -1154,7 +1213,7 @@ function drawMapLayer(date, min) {
   if (geo) {
     L.circleMarker([geo.lat, geo.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#3d8bff", fillOpacity: 1 })
       .addTo(layer)
-      .bindPopup("現在地");
+      .bindPopup(store.state.settings.geoOffset && !store.state.settings.simGeo ? "現在地（手動補正中）" : "現在地");
   }
 }
 
@@ -1840,6 +1899,18 @@ function openSettingsModal() {
   geoSimRow.appendChild(geoSwitch);
   sheet.appendChild(geoSimRow);
 
+  // 位置の手動補正
+  const offRow = el("div", { class: "settings-row" });
+  offRow.appendChild(
+    el("div", {}, [
+      el("div", { class: "label" }, "位置の手動補正"),
+      el("div", { class: "desc" }, store.state.settings.geoOffset ? "補正中です（現在地のずれを手動で直しています）" : "マップの🎯から、実際にいる場所をタップして補正できます"),
+    ])
+  );
+  const offReset = el("button", { class: "btn small", disabled: !store.state.settings.geoOffset, onclick: () => { clearGeoOffset(); backdrop.remove(); openSettingsModal(); } }, "解除");
+  offRow.appendChild(offReset);
+  sheet.appendChild(offRow);
+
   // 現在地の自動更新
   const autoRow = el("div", { class: "settings-row" });
   autoRow.appendChild(el("div", {}, [el("div", { class: "label" }, "現在地の自動更新"), el("div", { class: "desc" }, "フォアグラウンド復帰時・マップ表示時に測位")]));
@@ -2004,6 +2075,12 @@ function checkUrlImport() {
 }
 
 // ---------- 現在地取得 ----------
+function clearGeoOffset() {
+  store.state.settings.geoOffset = null;
+  store.persistSettings();
+  render();
+}
+
 function locateOnce() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {

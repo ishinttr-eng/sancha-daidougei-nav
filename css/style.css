@@ -358,6 +358,13 @@ details.finished-group[open] > summary { margin-bottom: 4px; }
   font-size: 1.1rem; cursor: pointer; color: var(--ink);
 }
 .map-loc-btn:hover { background: var(--card); }
+.map-correct-hint {
+  position: absolute; left: 50px; right: 10px; top: 10px; z-index: 500;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  background: var(--bg-2); color: var(--ink); border: 1px solid var(--accent); border-radius: 10px;
+  padding: 6px 10px; font-size: .82rem; box-shadow: var(--shadow);
+}
+.map-correct-hint[hidden] { display: none; }
 .pin-tieup { position: relative; }
 .pin-tieup::after {
   content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%);

@@ -42,6 +42,7 @@ export const state = {
       fontSize: "normal", // normal | large
       simTime: null, // "2026-10-17T13:00" 等
       simGeo: null, // {lat,lng}
+      geoOffset: null, // GPSのずれの手動補正 {dLat,dLng}。現在地(GPS)に足して使う
       autoLocate: false,
       theme: "system",
     },
